@@ -2,7 +2,7 @@ use actix_web::{
     HttpResponse,
     web::{
         Data,
-        Query
+        Json
     }
 };
 use crate::{
@@ -53,13 +53,13 @@ pub fn update_msg(db: &mut DbGaurd, store: &mut StoreGaurd, id: &MsgId, new_prio
             }
             Err(error)
         },
-        MoveResult::ReinsertionError{ insert_error: _, reinsert_error: _ } => {
-            panic!("msg removed and could not be reinserted.");
+        MoveResult::ReinsertionError{ insert_error, reinsert_error } => {
+            Err(format!("ReinsertionError: {}\n{}", insert_error, reinsert_error))
         }
     }
 }
 
-pub fn update(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
+pub fn update(data: Data<AppData>, info: Json<Info>) -> HttpResponse {
     let mut db = match fmt_result!(data.db.try_lock()) {
         Ok(db) => db,
         Err(_error) => {
@@ -74,6 +74,9 @@ pub fn update(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
     };
     match fmt_result!(update_msg(&mut db, &mut store, &info.id, &info.new_priority)) {
         Ok(_) => HttpResponse::Ok().finish(),
-        Err(_error) => HttpResponse::InternalServerError().finish()
+        Err(error) => {
+            println!("{}", error);
+            HttpResponse::InternalServerError().finish()
+        }
     }
 }
