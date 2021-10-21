@@ -18,12 +18,9 @@ use serde::{
 };
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct StoreData {
-    byte_size: MsgByteSize,
-    max_byte_size: Option<MsgByteSize>,
-    msg_count: usize,
-    group_count: usize,
-    groups: Vec<GroupData>
+pub struct GroupDefaults {
+    priority: GroupId,
+    max_byte_size: Option<MsgByteSize>
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -31,7 +28,17 @@ pub struct GroupData {
     priority: GroupId,
     byte_size: MsgByteSize,
     max_byte_size: Option<MsgByteSize>,
-    msg_count: usize    
+    msg_count: usize
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct StoreData {
+    byte_size: MsgByteSize,
+    max_byte_size: Option<MsgByteSize>,
+    msg_count: usize,
+    group_count: usize,
+    groups: Vec<GroupData>,
+    group_defaults: Vec<GroupDefaults>
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -55,12 +62,19 @@ pub fn get(data: Data<AppData>) -> HttpResponse {
             msg_count: group.msgs_map.len()
         }
     }).collect::<Vec<GroupData>>();
+    let group_defaults = store.group_defaults.iter().map(|(priority, details)| {
+        GroupDefaults {
+            priority: *priority,
+            max_byte_size: details.max_byte_size
+        }
+    }).collect::<Vec<GroupDefaults>>();
     let data = StoreData {
         byte_size: store.byte_size,
         max_byte_size: store.max_byte_size,
         msg_count: store.id_to_group_map.len(),
         group_count: store.groups_map.len(),
-        groups
+        groups,
+        group_defaults
     };
     HttpResponse::Ok().json(Reply::Ok{ data })
 }
