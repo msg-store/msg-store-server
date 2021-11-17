@@ -1,7 +1,4 @@
 use std::{
-    path::{
-        PathBuf
-    }, 
     sync::{
         Mutex,
         MutexGuard
@@ -35,7 +32,7 @@ pub type ConfigGaurd<'a> = MutexGuard<'a, StoreConfig>;
 
 pub struct AppData {
     pub store: Mutex<Store>,
-    pub config_location: Option<PathBuf>,
+    // pub config_location: Option<PathBuf>,
     pub config: Mutex<StoreConfig>
 }
 
@@ -60,14 +57,14 @@ async fn main() -> std::io::Result<()> {
     // };
 
 
-    let (store, store_config, config_location) = init();
+    let (store, store_config) = init();
 
     
 
 
     let app_data = Data::new(AppData {
         store: Mutex::new(store),
-        config_location,
+        // config_location,
         config: Mutex::new(store_config)
     });
 

@@ -20,8 +20,7 @@ use serde::{
     Serialize
 };
 use std::{
-    borrow::BorrowMut,
-    path::PathBuf
+    borrow::BorrowMut
 };
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -33,7 +32,7 @@ pub struct Body {
 pub fn post_group_defaults(
     store: &mut StoreGaurd, 
     config: &mut ConfigGaurd, 
-    config_location: &Option<PathBuf>, 
+    // config_location: &Option<PathBuf>, 
     body: &Body) -> Result<(), String> {
         let defaults = GroupDefaults {
             max_byte_size: body.max_byte_size
@@ -77,9 +76,7 @@ pub fn post_group_defaults(
                 ]);
             }
         };
-        if let Some(config_location) = config_location {
-            fmt_result!(config.update_config_file(&config_location))?;
-        }        
+        fmt_result!(config.update_config_file())?;
     Ok(())
 }
 
@@ -96,7 +93,7 @@ pub fn post(data: Data<AppData>, body: Json<Body>) -> HttpResponse {
             return HttpResponse::InternalServerError().finish()
         }
     };
-    match fmt_result!(post_group_defaults(&mut store, &mut config, &data.config_location, &body.into_inner())) {
+    match fmt_result!(post_group_defaults(&mut store, &mut config, &body.into_inner())) {
         Ok(_) => HttpResponse::Ok().finish(),
         Err(_error) => HttpResponse::InternalServerError().finish()
     }    

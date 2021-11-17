@@ -39,28 +39,23 @@ pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
             return HttpResponse::InternalServerError().finish();
         }
     };
-    match &info.priority {
-        Some(priority) => match store.group_defaults.get(priority) {
-            Some(defaults) => {
-                let group_defaults = GroupDefaults {
-                    priority: priority.clone(),
-                    max_byte_size: defaults.max_byte_size
-                };
-                HttpResponse::Ok().json(Reply::Ok{data: Some(group_defaults)})
-            },
-            None => {
-                HttpResponse::Ok().json(Reply::Ok{data: None})
-            }
-        },
-        None => {
-            let data = store.group_defaults.iter().map(|(priority, defaults)| {
-                GroupDefaults {
-                    priority: priority.clone(),
-                    max_byte_size: defaults.max_byte_size
-                }
-            }).collect::<Vec<GroupDefaults>>();
-            HttpResponse::Ok().json(Reply::OkMany{data})
+    if let Some(priority) = info.priority {
+        if let Some(defaults) = store.group_defaults.get(&priority) {
+            let group_defaults = GroupDefaults {
+                priority: priority.clone(),
+                max_byte_size: defaults.max_byte_size
+            };
+            HttpResponse::Ok().json(Reply::Ok{data: Some(group_defaults)})
+        } else {
+            HttpResponse::Ok().json(Reply::Ok{data: None})
         }
-    }
-    
+    } else {
+        let data = store.group_defaults.iter().map(|(priority, defaults)| {
+            GroupDefaults {
+                priority: priority.clone(),
+                max_byte_size: defaults.max_byte_size
+            }
+        }).collect::<Vec<GroupDefaults>>();
+        HttpResponse::Ok().json(Reply::OkMany{data})
+    }    
 }

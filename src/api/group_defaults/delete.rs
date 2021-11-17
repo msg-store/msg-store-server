@@ -45,10 +45,8 @@ pub fn delete(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
         }
     }).map(|group| group.clone()).collect();
     config.groups = Some(new_groups);
-    if let Some(config_location) = &data.config_location {
-        if let Err(_error) = fmt_result!(config.update_config_file(&config_location)) {
-            return HttpResponse::InternalServerError().finish();
-        }
-    }    
+    if let Err(_error) = fmt_result!(config.update_config_file()) {
+        return HttpResponse::InternalServerError().finish();
+    }
     HttpResponse::Ok().finish()
 }

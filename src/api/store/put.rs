@@ -17,9 +17,6 @@ use serde::{
     Deserialize, 
     Serialize
 };
-use std::{
-    path::PathBuf
-};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Body {
@@ -29,15 +26,13 @@ pub struct Body {
 pub fn update_store(
     store: &mut StoreGaurd,
     config: &mut ConfigGaurd,
-    config_location: &Option<PathBuf>,
+    // config_location: &Option<PathBuf>,
     body: &Body) -> Result<(), String> {
     store.max_byte_size = body.max_byte_size;
     let defaults = StoreDefaults { max_byte_size: body.max_byte_size };
     store.update_store_defaults(&defaults);
-    if let Some(config_location) = config_location {
-        config.max_byte_size = body.max_byte_size;
-        fmt_result!(config.update_config_file(config_location))?;
-    }
+    config.max_byte_size = body.max_byte_size;
+    fmt_result!(config.update_config_file())?;
     Ok(())
 }
 
@@ -54,7 +49,7 @@ pub fn update(data: Data<AppData>, body: Json<Body>) -> HttpResponse {
             return HttpResponse::InternalServerError().finish();
         }
     };
-    match fmt_result!(update_store(&mut store, &mut config, &data.config_location, &body.into_inner())) {
+    match fmt_result!(update_store(&mut store, &mut config, &body.into_inner())) {
         Ok(_) => HttpResponse::Ok().finish(),
         Err(_error) => {
             HttpResponse::InternalServerError().finish()
