@@ -15,29 +15,27 @@ use actix_web::{
     App, 
     HttpServer
 };
-use msg_store::store::{
-    Store,
-    generate_store
-};
 
 mod api;
-mod args;
 mod config;
-mod database;
 mod error;
+mod init;
 
 use config::{
     StoreConfig
 };
 
-pub type DbGaurd<'a> = MutexGuard<'a, database::leveldb::Db>;
+use init::{
+    Store,
+    init
+};
+
 pub type StoreGaurd<'a> = MutexGuard<'a, Store>;
 pub type ConfigGaurd<'a> = MutexGuard<'a, StoreConfig>;
 
 pub struct AppData {
-    pub db: Mutex<database::leveldb::Db>,
     pub store: Mutex<Store>,
-    pub config_location: PathBuf,
+    pub config_location: Option<PathBuf>,
     pub config: Mutex<StoreConfig>
 }
 
@@ -45,31 +43,31 @@ pub struct AppData {
 async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "actix_server=info,actix_web=info");
     
-    let args = args::Args::default();
+    // let args = args::Args::default();
+    // let (store, store_config, config_location) = StoreConfig::open(&args.config_location);
+    
 
-    let store_config = StoreConfig::open(&args.config_location);
+    // let _db_location: PathBuf = {
+    //     match &args.database_location {
+    //         Some(location) => location.to_path_buf(),
+    //         None => match &store_config.location {
+    //             Some(location) => location.to_path_buf(),
+    //             None => {
+    //                 panic!("Database location was not set.");
+    //             }
+    //         }
+    //     }
+    // };
 
-    let db_location: PathBuf = {
-        match &args.database_location {
-            Some(location) => location.to_path_buf(),
-            None => match &store_config.location {
-                Some(location) => location.to_path_buf(),
-                None => {
-                    panic!("Database location was not set.");
-                }
-            }
-        }
-    };
 
-    let mut db = database::leveldb::Db::open(&db_location).unwrap();
-    let mut store = generate_store();
+    let (store, store_config, config_location) = init();
 
-    db.setup(&mut store, &store_config).expect("Could not setup database.");
+    
+
 
     let app_data = Data::new(AppData {
-        db: Mutex::new(db),
         store: Mutex::new(store),
-        config_location: args.config_location,
+        config_location,
         config: Mutex::new(store_config)
     });
 
@@ -79,7 +77,6 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .app_data(app_data.clone())
             
-            .route("/api/group", web::delete().to(api::group::delete::delete))
             .route("/api/group", web::get().to(api::group::get::get))
             
             .route("/api/group_defaults", web::delete().to(api::group_defaults::delete::delete))
@@ -89,7 +86,6 @@ async fn main() -> std::io::Result<()> {
             .route("/api/msg", web::get().to(api::msg::get::get))
             .route("/api/msg", web::delete().to(api::msg::delete::delete))
             .route("/api/msg", web::post().to(api::msg::post::post))
-            .route("/api/msg", web::put().to(api::msg::put::update))
             
             .route("/api/store", web::get().to(api::store::get::get))
             .route("/api/store", web::put().to(api::store::put::update))

@@ -8,21 +8,12 @@ use actix_web::{
 use crate::{
     AppData, 
     ConfigGaurd, 
-    DbGaurd, 
     StoreGaurd, 
-    api::{
-        msg::{
-            delete::delete_msg,
-            post::post_msg
-        }
-    }, 
     config::GroupConfig,
     fmt_result
 };
 use msg_store::store::{
-    GroupId,
-    GroupDefaults,
-    MsgByteSize
+    GroupDefaults
 };
 use serde::{
     Deserialize, 
@@ -35,38 +26,19 @@ use std::{
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Body {
-    priority: GroupId,
-    max_byte_size: Option<MsgByteSize>,
-    prune: Option<bool>, // default = true
-    update_config: Option<bool> // default = true
+    priority: i32,
+    max_byte_size: Option<i32>
 }
 
 pub fn post_group_defaults(
-    db: &mut DbGaurd,
     store: &mut StoreGaurd, 
     config: &mut ConfigGaurd, 
-    config_location: &PathBuf, 
+    config_location: &Option<PathBuf>, 
     body: &Body) -> Result<(), String> {
-    let update_config = match body.update_config {
-        Some(update) => update,
-        None => true
-    };
-    let prune = match body.prune {
-        Some(prune) => prune,
-        None => true
-    };
-    if let Some(group) = store.groups_map.get_mut(&body.priority) {
-        group.max_byte_size = body.max_byte_size;
-    }
-    if let Some(mut defaults) = store.group_defaults.get_mut(&body.priority) {
-        defaults.max_byte_size = body.max_byte_size;
-    } else {
         let defaults = GroupDefaults {
             max_byte_size: body.max_byte_size
         };
-        store.group_defaults.insert(body.priority, defaults);
-    }
-    if update_config {
+        store.update_group_defaults(body.priority, &defaults);
         let mk_group_config = || -> GroupConfig {
             GroupConfig {
                 priority: body.priority,
@@ -104,23 +76,14 @@ pub fn post_group_defaults(
                     mk_group_config()
                 ]);
             }
-        };        
-        fmt_result!(config.update_config_file(&config_location))?;
-    }
-    if prune {
-        let id = fmt_result!(post_msg(db, store, &body.priority, ""))?;
-        fmt_result!(delete_msg(db, store, &id))?;
-    }
+        };
+        if let Some(config_location) = config_location {
+            fmt_result!(config.update_config_file(&config_location))?;
+        }        
     Ok(())
 }
 
 pub fn post(data: Data<AppData>, body: Json<Body>) -> HttpResponse {
-    let mut db = match fmt_result!(data.db.try_lock()) {
-        Ok(db) => db,
-        Err(_error) => {
-            return HttpResponse::InternalServerError().finish()
-        }
-    };
     let mut store = match fmt_result!(data.store.try_lock()) {
         Ok(store) => store,
         Err(_error) => {
@@ -133,7 +96,7 @@ pub fn post(data: Data<AppData>, body: Json<Body>) -> HttpResponse {
             return HttpResponse::InternalServerError().finish()
         }
     };
-    match fmt_result!(post_group_defaults(&mut db, &mut store, &mut config, &data.config_location, &body.into_inner())) {
+    match fmt_result!(post_group_defaults(&mut store, &mut config, &data.config_location, &body.into_inner())) {
         Ok(_) => HttpResponse::Ok().finish(),
         Err(_error) => HttpResponse::InternalServerError().finish()
     }    

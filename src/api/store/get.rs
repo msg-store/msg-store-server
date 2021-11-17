@@ -8,10 +8,7 @@ use crate::{
     AppData,
     fmt_result
 };
-use msg_store::store::{
-    GroupId,
-    MsgByteSize
-};
+
 use serde::{
     Deserialize, 
     Serialize
@@ -19,22 +16,22 @@ use serde::{
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GroupDefaults {
-    priority: GroupId,
-    max_byte_size: Option<MsgByteSize>
+    priority: i32,
+    max_byte_size: Option<i32>
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GroupData {
-    priority: GroupId,
-    byte_size: MsgByteSize,
-    max_byte_size: Option<MsgByteSize>,
+    priority: i32,
+    byte_size: i32,
+    max_byte_size: Option<i32>,
     msg_count: usize
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct StoreData {
-    byte_size: MsgByteSize,
-    max_byte_size: Option<MsgByteSize>,
+    byte_size: i32,
+    max_byte_size: Option<i32>,
     msg_count: usize,
     group_count: usize,
     groups: Vec<GroupData>,
