@@ -44,13 +44,13 @@ fn get_app<'a>() -> App<'a, 'a> {
         .arg(Arg::with_name("no-update")
             // .short("c")
             .long("no-update")
-            .value_name("NOUPDATE")
+            // .value_name("NOUPDATE")
             .help("Will not write updated config to disk"))
         .arg(Arg::with_name("no-config")
             .long("no-config")
             .conflicts_with("config")
             .conflicts_with("no-update")
-            .value_name("NOCONFIG")
+            // .value_name("NOCONFIG")
             .help("Will not search for or load a config file"))
 }
 
@@ -127,8 +127,8 @@ cfg_if::cfg_if! {
         pub type Store = MemStore;
 
         pub fn init() -> InitResult {
-            let matches = get_app().get_matches();
 
+            let matches = get_app().get_matches();
             let config_location = get_config_path(&matches);
             let store_config = get_store_config(&config_location);
             let update_config = get_update_config_setting(&matches, &store_config);
@@ -153,6 +153,7 @@ cfg_if::cfg_if! {
 
         pub type Store = LevelStore;
         pub fn init() -> InitResult {
+            
             let matches = get_app()
                 .arg(Arg::with_name("leveldb-location")
                     .long("leveldb-location")
