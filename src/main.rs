@@ -1,4 +1,5 @@
 use std::{
+    path::PathBuf,
     sync::{
         Mutex,
         MutexGuard
@@ -32,7 +33,7 @@ pub type ConfigGaurd<'a> = MutexGuard<'a, StoreConfig>;
 
 pub struct AppData {
     pub store: Mutex<Store>,
-    // pub config_location: Option<PathBuf>,
+    pub config_location: Option<PathBuf>,
     pub config: Mutex<StoreConfig>
 }
 
@@ -57,15 +58,15 @@ async fn main() -> std::io::Result<()> {
     // };
 
 
-    let (store, store_config) = init();
+    let init_result = init();
 
     
 
 
     let app_data = Data::new(AppData {
-        store: Mutex::new(store),
-        // config_location,
-        config: Mutex::new(store_config)
+        store: Mutex::new(init_result.store),
+        config_location: init_result.config_location,
+        config: Mutex::new(init_result.store_config)
     });
 
     HttpServer::new(move || {
@@ -88,7 +89,7 @@ async fn main() -> std::io::Result<()> {
             .route("/api/store", web::put().to(api::store::put::update))
     })
     // start http server on 127.0.0.1:8080
-    .bind("127.0.0.1:8080")?
+    .bind(init_result.host)?
     .run()
     .await
 }

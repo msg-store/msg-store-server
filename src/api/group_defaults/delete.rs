@@ -5,7 +5,7 @@ use actix_web::{
         Query
     }
 };
-use crate::{AppData, config::GroupConfig, fmt_result};
+use crate::{api::update_config, AppData, config::GroupConfig, fmt_result};
 
 use serde::{
     Deserialize, 
@@ -45,7 +45,7 @@ pub fn delete(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
         }
     }).map(|group| group.clone()).collect();
     config.groups = Some(new_groups);
-    if let Err(_error) = fmt_result!(config.update_config_file()) {
+    if let Err(_error) = fmt_result!(update_config(&config, &data.config_location)) {
         return HttpResponse::InternalServerError().finish();
     }
     HttpResponse::Ok().finish()
