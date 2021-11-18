@@ -1160,6 +1160,22 @@ dependencies = [
 
 [[package]]
 name = "msg-store"
+version = "0.1.0"
+dependencies = [
+ "actix",
+ "actix-web",
+ "actix-web-actors",
+ "cfg-if 1.0.0",
+ "clap",
+ "dirs",
+ "msg-store 0.3.3",
+ "msg-store-plugin-leveldb",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "msg-store"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c115dc2be649ae47bf4573698b6726db4f2b9498a2e47d119d05ac580e0dfa81"
@@ -1173,24 +1189,8 @@ dependencies = [
  "bincode",
  "db-key",
  "leveldb",
- "msg-store",
+ "msg-store 0.3.3",
  "serde",
-]
-
-[[package]]
-name = "msg-stored"
-version = "0.1.0"
-dependencies = [
- "actix",
- "actix-web",
- "actix-web-actors",
- "cfg-if 1.0.0",
- "clap",
- "dirs",
- "msg-store",
- "msg-store-plugin-leveldb",
- "serde",
- "serde_json",
 ]
 
 [[package]]

@@ -1,5 +1,5 @@
 [package]
-name = "msg-stored"
+name = "msg-store-server"
 version = "0.1.0"
 authors = ["joshua enokson <kilograhm@pm.me>"]
 edition = "2018"
