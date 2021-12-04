@@ -36,22 +36,6 @@ pub enum Reply {
     Ok { data: Option<MsgData> }
 }
 
-pub fn get_msg(store: &mut StoreGaurd, info: &Info) -> Option<MsgData> {
-    let uuid = match &info.uuid {
-        Some(str) => Some(Uuid::from_string(&str)),
-        None => None
-    };
-    match store.get(uuid, info.priority) {
-        Some(stored_packet) => {
-            Some(MsgData {
-                uuid: stored_packet.uuid.to_string(),
-                msg: stored_packet.msg
-            })
-        },
-        None => None
-    }
-}
-
 pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
     let mut store = match fmt_result!(data.store.try_lock()) {
         Ok(db) => db,
@@ -59,6 +43,23 @@ pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
             return HttpResponse::InternalServerError().finish();
         }
     };
-    let data = get_msg(&mut store, &info.into_inner());
+    let uuid = match &info.uuid {
+        Some(str) => Some(Uuid::from_string(&str)),
+        None => None
+    };
+    let stored_packet = match store.get(uuid, info.priority) {
+        Ok(data) => data,
+        Err(error) => {
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+    let data = if let Some(stored_packet) = stored_packet {
+        Some(MsgData {
+            uuid: stored_packet.uuid.to_string(),
+            msg: stored_packet.msg
+        })
+    } else {
+        None
+    };
     HttpResponse::Ok().json(Reply::Ok{ data })
 }
