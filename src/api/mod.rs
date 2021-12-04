@@ -1,5 +1,6 @@
 pub mod group;
 pub mod group_defaults;
+pub mod stats;
 pub mod store;
 pub mod msg;
 

@@ -85,6 +85,10 @@ async fn main() -> std::io::Result<()> {
             .route("/api/msg", web::delete().to(api::msg::delete::delete))
             .route("/api/msg", web::post().to(api::msg::post::post))
             
+            .route("/api/stats", web::delete().to(api::stats::delete::delete))
+            .route("/api/stats", web::get().to(api::stats::get::get))
+            .route("/api/stats", web::put().to(api::stats::put::update))
+
             .route("/api/store", web::get().to(api::store::get::get))
             .route("/api/store", web::put().to(api::store::put::update))
     })
