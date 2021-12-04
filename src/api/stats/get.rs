@@ -30,9 +30,9 @@ pub struct GroupData {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Stats {
-    inserted: i32,
-    deleted: i32,
-    pruned: i32
+    pub inserted: i32,
+    pub deleted: i32,
+    pub pruned: i32
 }
 
 #[derive(Debug, Deserialize, Serialize)]
