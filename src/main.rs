@@ -53,6 +53,8 @@ async fn main() -> std::io::Result<()> {
             // enable logger
             .wrap(middleware::Logger::default())
             .app_data(app_data.clone())
+
+            .route("/api/export", web::get().to(api::export::get))
             
             .route("/api/group", web::delete().to(api::group::delete::delete))
             .route("/api/group", web::get().to(api::group::get::get))
