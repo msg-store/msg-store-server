@@ -7,10 +7,9 @@ use actix_web::{
 };
 use crate::{
     AppData,
-    StoreGaurd,
     fmt_result
 };
-use msg_store::{Packet, Uuid};
+use msg_store::Packet;
 use serde::{
     Deserialize, 
     Serialize
@@ -28,20 +27,16 @@ pub enum Reply {
     Ok { uuid: String }
 }
 
-pub fn post_msg(store: &mut StoreGaurd, priority: &i32, msg: &str) -> Result<Uuid, String> {
-    let packet = Packet::new(*priority, msg.to_string());
-    fmt_result!(store.add(&packet))
-}
-
 pub fn post(data: Data<AppData>, body: Json<Body>) -> HttpResponse {
     let mut store = match fmt_result!(data.store.try_lock()) {
-        Ok(db) => db,
+        Ok(store) => store,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish();
         }
     };
-    let uuid = match fmt_result!(post_msg(&mut store, &body.priority, &body.msg)) {
-        Ok(id) => id,
+    let packet = Packet::new(body.priority, body.msg.to_string());
+    let uuid = match store.add(&packet) {
+        Ok(uuid) => uuid,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish();
         }

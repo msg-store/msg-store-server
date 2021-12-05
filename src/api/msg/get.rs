@@ -5,11 +5,7 @@ use actix_web::{
         Query
     }
 };
-use crate::{
-    AppData,
-    StoreGaurd,
-    fmt_result
-};
+use crate::AppData;
 use msg_store::{
     Uuid
 };
@@ -37,8 +33,8 @@ pub enum Reply {
 }
 
 pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
-    let mut store = match fmt_result!(data.store.try_lock()) {
-        Ok(db) => db,
+    let mut store = match data.store.try_lock() {
+        Ok(store) => store,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish();
         }
@@ -49,7 +45,7 @@ pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
     };
     let stored_packet = match store.get(uuid, info.priority) {
         Ok(data) => data,
-        Err(error) => {
+        Err(_error) => {
             return HttpResponse::InternalServerError().finish();
         }
     };

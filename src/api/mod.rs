@@ -4,17 +4,8 @@ pub mod stats;
 pub mod store;
 pub mod msg;
 
-use crate::{
-    config::{
-        StoreConfig
-    },
-    fmt_result
-};
-use std::{
-    path::{
-        PathBuf
-    }
-};
+use crate::config::StoreConfig;
+use std::path::PathBuf;
 
 pub fn update_config(config: &StoreConfig, config_path: &Option<PathBuf>) -> Result<(), String> {
     let should_update = {
@@ -28,7 +19,7 @@ pub fn update_config(config: &StoreConfig, config_path: &Option<PathBuf>) -> Res
     };
     if should_update {
         if let Some(config_path) = config_path {
-            fmt_result!(config.update_config_file(&config_path))?;
+            config.update_config_file(&config_path)?;
         }        
     }
     Ok(())
