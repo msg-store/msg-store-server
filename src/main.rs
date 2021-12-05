@@ -39,28 +39,8 @@ pub struct AppData {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "actix_server=info,actix_web=info");
-    
-    // let args = args::Args::default();
-    // let (store, store_config, config_location) = StoreConfig::open(&args.config_location);
-    
-
-    // let _db_location: PathBuf = {
-    //     match &args.database_location {
-    //         Some(location) => location.to_path_buf(),
-    //         None => match &store_config.location {
-    //             Some(location) => location.to_path_buf(),
-    //             None => {
-    //                 panic!("Database location was not set.");
-    //             }
-    //         }
-    //     }
-    // };
-
 
     let init_result = init();
-
-    
-
 
     let app_data = Data::new(AppData {
         store: Mutex::new(init_result.store),
@@ -74,6 +54,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .app_data(app_data.clone())
             
+            .route("/api/group", web::delete().to(api::group::delete::delete))
             .route("/api/group", web::get().to(api::group::get::get))
             
             .route("/api/group_defaults", web::delete().to(api::group_defaults::delete::delete))
