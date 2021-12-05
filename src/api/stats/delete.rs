@@ -6,7 +6,6 @@ use actix_web::{
 };
 use crate::{
     AppData,
-    fmt_result,
     api::stats::get::Stats
 };
 
@@ -22,7 +21,7 @@ pub enum Reply {
 }
 
 pub fn delete(data: Data<AppData>) -> HttpResponse {
-    let mut store = match fmt_result!(data.store.try_lock()) {
+    let mut store = match data.store.try_lock() {
         Ok(store) => store,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish();

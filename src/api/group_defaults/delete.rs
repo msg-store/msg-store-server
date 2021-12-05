@@ -5,7 +5,7 @@ use actix_web::{
         Query
     }
 };
-use crate::{api::update_config, AppData, config::GroupConfig, fmt_result};
+use crate::{api::update_config, AppData, config::GroupConfig};
 
 use serde::{
     Deserialize, 
@@ -18,14 +18,14 @@ pub struct Info {
 }
 
 pub fn delete(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
-    let mut store = match fmt_result!(data.store.try_lock()) {
+    let mut store = match data.store.try_lock() {
         Ok(store) => store,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish();
         }
     };
     store.delete_group_defaults(info.priority);
-    let mut config = match fmt_result!(data.config.try_lock()) {
+    let mut config = match data.config.try_lock() {
         Ok(config) => config,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish()
@@ -45,7 +45,7 @@ pub fn delete(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
         }
     }).map(|group| group.clone()).collect();
     config.groups = Some(new_groups);
-    if let Err(_error) = fmt_result!(update_config(&config, &data.config_location)) {
+    if let Err(_error) = update_config(&config, &data.config_location) {
         return HttpResponse::InternalServerError().finish();
     }
     HttpResponse::Ok().finish()

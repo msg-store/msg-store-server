@@ -1,10 +1,3 @@
-use crate::{
-    fmt_result
-};
-// use dirs::{
-//     home_dir
-// };
-// use msg_store::Store;
 use serde::{
     Deserialize,
     Serialize
@@ -97,9 +90,13 @@ impl StoreConfig {
         from_json_str(&contents).expect("Invalid JSON config.")
     }
     pub fn update_config_file(&self, config_path: &PathBuf) -> Result<(), String> {
-        // let config_path = home_dir().expect("Could not find home dir").join(".msg-store/config.json");
-        let contents = fmt_result!(to_json_string(&self))?;
-        fmt_result!(fs::write(config_path, contents))?;
+        let contents = match to_json_string(&self) {
+            Ok(contents) => Ok(contents),
+            Err(error) => Err(error.to_string())
+        }?;
+        if let Err(error) = fs::write(config_path, contents) {
+            return Err(error.to_string());
+        };
         Ok(())
     }
 }

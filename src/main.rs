@@ -2,7 +2,7 @@ use std::{
     path::PathBuf,
     sync::{
         Mutex,
-        MutexGuard
+        // MutexGuard
     }};
 use actix_web::{
     middleware, 
@@ -16,7 +16,6 @@ use actix_web::{
 
 mod api;
 mod config;
-mod error;
 mod init;
 
 use config::{
@@ -28,8 +27,8 @@ use init::{
     init
 };
 
-pub type StoreGaurd<'a> = MutexGuard<'a, Store>;
-pub type ConfigGaurd<'a> = MutexGuard<'a, StoreConfig>;
+// pub type StoreGaurd<'a> = MutexGuard<'a, Store>;
+// pub type ConfigGaurd<'a> = MutexGuard<'a, StoreConfig>;
 
 pub struct AppData {
     pub store: Mutex<Store>,

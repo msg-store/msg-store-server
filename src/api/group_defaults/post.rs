@@ -8,8 +8,7 @@ use actix_web::{
 use crate::{
     api::update_config,
     AppData,
-    config::GroupConfig,
-    fmt_result
+    config::GroupConfig
 };
 use msg_store::store::{
     GroupDefaults
@@ -27,13 +26,13 @@ pub struct Body {
 }
 
 pub fn post(data: Data<AppData>, body: Json<Body>) -> HttpResponse {
-    let mut store = match fmt_result!(data.store.try_lock()) {
+    let mut store = match data.store.try_lock() {
         Ok(store) => store,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish();
         }
     };
-    let mut config = match fmt_result!(data.config.try_lock()) {
+    let mut config = match data.config.try_lock() {
         Ok(config) => config,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish()

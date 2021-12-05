@@ -5,10 +5,7 @@ use actix_web::{
         Json
     }
 };
-use crate::{
-    AppData,
-    fmt_result
-};
+use crate::AppData;
 use msg_store::Packet;
 use serde::{
     Deserialize, 
@@ -28,7 +25,7 @@ pub enum Reply {
 }
 
 pub fn post(data: Data<AppData>, body: Json<Body>) -> HttpResponse {
-    let mut store = match fmt_result!(data.store.try_lock()) {
+    let mut store = match data.store.try_lock() {
         Ok(store) => store,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish();

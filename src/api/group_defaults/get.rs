@@ -5,10 +5,7 @@ use actix_web::{
         Query
     }
 };
-use crate::{
-    AppData,
-    fmt_result
-};
+use crate::AppData;
 use serde::{
     Deserialize, 
     Serialize
@@ -33,7 +30,7 @@ pub enum Reply {
 }
 
 pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
-    let store = match fmt_result!(data.store.try_lock()) {
+    let store = match data.store.try_lock() {
         Ok(store) => store,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish();
