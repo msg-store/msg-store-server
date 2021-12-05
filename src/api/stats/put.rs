@@ -33,7 +33,7 @@ pub fn update(data: Data<AppData>, body: Json<Body>) -> HttpResponse {
         store.msgs_deleted = deleted;
     }
     if let Some(pruned) = body.pruned {
-        store.msgs_burned = pruned;
+        store.msgs_pruned = pruned;
     }
     HttpResponse::Ok().finish()    
 }

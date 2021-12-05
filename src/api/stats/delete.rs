@@ -30,10 +30,10 @@ pub fn delete(data: Data<AppData>) -> HttpResponse {
     let data = Stats {
         inserted: store.msgs_inserted,
         deleted: store.msgs_deleted,
-        pruned: store.msgs_burned
+        pruned: store.msgs_pruned
     };
     store.msgs_inserted = 0;
     store.msgs_deleted = 0;
-    store.msgs_burned = 0;
+    store.msgs_pruned = 0;
     HttpResponse::Ok().json(Reply::Ok { data })
 }

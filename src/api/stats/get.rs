@@ -48,6 +48,6 @@ pub fn get(data: Data<AppData>) -> HttpResponse {
     HttpResponse::Ok().json(Reply::Ok{ data: Stats {
         inserted: store.msgs_inserted,
         deleted: store.msgs_deleted,
-        pruned: store.msgs_burned
+        pruned: store.msgs_pruned
     } })
 }

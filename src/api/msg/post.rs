@@ -31,8 +31,7 @@ pub fn post(data: Data<AppData>, body: Json<Body>) -> HttpResponse {
             return HttpResponse::InternalServerError().finish();
         }
     };
-    let packet = Packet::new(body.priority, body.msg.to_string());
-    let uuid = match store.add(&packet) {
+    let uuid = match store.add(Packet::new(body.priority, body.msg.to_string())) {
         Ok(uuid) => uuid,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish();

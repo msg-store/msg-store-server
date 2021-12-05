@@ -3,7 +3,7 @@ use actix_web::{
     web::{Data, Query}
 };
 use crate::AppData;
-use msg_store::Uuid;
+use msg_store::{GetOptions, Uuid};
 use serde::{
     Deserialize, 
     Serialize
@@ -108,7 +108,7 @@ pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
             }
         };
 
-        let msg_option = match store.get(Some(uuid), None) {
+        let msg_option = match store.get(GetOptions::default().uuid(uuid)) {
             Ok(msg) => msg,
             Err(_error) => {
                 return HttpResponse::InternalServerError().finish();

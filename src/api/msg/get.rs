@@ -7,6 +7,7 @@ use actix_web::{
 };
 use crate::AppData;
 use msg_store::{
+    GetOptions,
     Uuid
 };
 use serde::{
@@ -23,7 +24,8 @@ pub struct MsgData {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Info {
     uuid: Option<String>,
-    priority: Option<i32>
+    priority: Option<i32>,
+    reverse: Option<bool>
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -39,11 +41,24 @@ pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
             return HttpResponse::InternalServerError().finish();
         }
     };
-    let uuid = match &info.uuid {
-        Some(str) => Some(Uuid::from_string(&str)),
-        None => None
-    };
-    let stored_packet = match store.get(uuid, info.priority) {
+    // let uuid = match &info.uuid {
+    //     Some(str) => Some(Uuid::from_string(&str)),
+    //     None => None
+    // };
+    let mut options = GetOptions::default();
+    if let Some(uuid_string) = info.uuid.clone() {
+        let uuid = Uuid::from_string(&uuid_string);
+        options.uuid = Some(uuid);
+    }
+    if let Some(priority) = info.priority {
+        options.priority = Some(priority);
+    }
+    if let Some(reverse) = info.reverse {
+        if reverse {
+            options.reverse = true;
+        }
+    }
+    let stored_packet = match store.get(options) {
         Ok(data) => data,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish();
