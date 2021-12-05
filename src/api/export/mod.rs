@@ -10,11 +10,11 @@ use serde::{
 };
 use serde_json::to_string;
 use std::{
-
     fs::OpenOptions,
-    path::PathBuf,
+    io::Write,
     ops::Bound::Included,
-    str::FromStr, io::Write
+    path::PathBuf,
+    str::FromStr,
 };
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -29,12 +29,6 @@ pub struct Info {
     priority: Option<i32>,
     range: Option<(Option<i32>, Option<i32>)>
 }
-
-// #[derive(Debug, Deserialize, Serialize)]
-// #[serde(untagged)]
-// pub enum Reply {
-//     Ok { data: StoreData }
-// }
 
 pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
 
