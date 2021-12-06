@@ -1,0 +1,1644 @@
+{
+    "info": {
+        "_postman_id": "fd33cefb-44b8-4e60-a7f2-15604a14cfe1",
+        "name": "msg-store-collection",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "api",
+            "item": [
+                {
+                    "name": "group",
+                    "item": [
+                        {
+                            "name": "Remove a group and it's messages from the store",
+                            "id": "54728f9d-7f43-4ec4-8e17-abb783d0c1c5",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/group?priority=86564476",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "group"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "priority",
+                                            "value": "86564476",
+                                            "description": "(Required) "
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": [
+                                {
+                                    "id": "0b0a009c-1efb-4fc4-b336-976cecb36e36",
+                                    "name": "Success response",
+                                    "originalRequest": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/group?priority=86564476",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "group"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "priority",
+                                                    "value": "86564476"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": ""
+                                },
+                                {
+                                    "id": "f7bcb5f4-cee7-4116-8e87-1d84b375c069",
+                                    "name": "Bad request: Missing parameter",
+                                    "originalRequest": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/group?priority=86564476",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "group"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "priority",
+                                                    "value": "86564476"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "Bad Request",
+                                    "code": 400,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": ""
+                                },
+                                {
+                                    "id": "589225bf-af4d-406a-892b-21633a884c64",
+                                    "name": "Internal server error",
+                                    "originalRequest": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/group?priority=86564476",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "group"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "priority",
+                                                    "value": "86564476"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "Internal Server Error",
+                                    "code": 500,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": ""
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get group level metadata",
+                            "id": "4edff1c4-be0a-4809-859c-cd8428ef0855",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/group?priority=86564476&includeMsgData=false",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "group"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "priority",
+                                            "value": "86564476"
+                                        },
+                                        {
+                                            "key": "includeMsgData",
+                                            "value": "false"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": [
+                                {
+                                    "id": "526af932-2c8c-491f-9cff-27f45406885a",
+                                    "name": "Returns metadata about groups",
+                                    "originalRequest": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/group?priority=86564476&includeMsgData=false",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "group"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "priority",
+                                                    "value": "86564476"
+                                                },
+                                                {
+                                                    "key": "includeMsgData",
+                                                    "value": "false"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "{\n \"data\": {\n  \"priority\": -32649896,\n  \"byteSize\": -26485246,\n  \"msgCount\": -26012445,\n  \"messages\": [\n   {\n    \"uuid\": \"fugiat sint veniam Lorem\",\n    \"byteSize\": 23496427\n   },\n   {\n    \"uuid\": \"ut ullamco\",\n    \"byteSize\": 56648529\n   }\n  ],\n  \"maxByteSize\": -57606064\n }\n}"
+                                },
+                                {
+                                    "id": "e1878f4d-7985-46a1-9e2b-940666dedf8a",
+                                    "name": "Missing or invalid paramater",
+                                    "originalRequest": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/group?priority=86564476&includeMsgData=false",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "group"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "priority",
+                                                    "value": "86564476"
+                                                },
+                                                {
+                                                    "key": "includeMsgData",
+                                                    "value": "false"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "Bad Request",
+                                    "code": 400,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "enim eius"
+                                },
+                                {
+                                    "id": "5f2d8261-f135-45f3-b785-15529dbcf539",
+                                    "name": "Internal server error",
+                                    "originalRequest": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/group?priority=86564476&includeMsgData=false",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "group"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "priority",
+                                                    "value": "86564476"
+                                                },
+                                                {
+                                                    "key": "includeMsgData",
+                                                    "value": "false"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "Internal Server Error",
+                                    "code": 500,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "enim eius"
+                                }
+                            ]
+                        }
+                    ],
+                    "id": "a2a31134-5879-4afa-8e27-aeb80585f15f"
+                },
+                {
+                    "name": "group-defaults",
+                    "item": [
+                        {
+                            "name": "/api/group-defaults",
+                            "id": "d2f84077-0881-4440-beaf-9a5555835731",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/group-defaults?priority=86564476",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "group-defaults"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "priority",
+                                            "value": "86564476",
+                                            "description": "(Required) "
+                                        }
+                                    ]
+                                },
+                                "description": "Remove default configuration for a priority group"
+                            },
+                            "response": [
+                                {
+                                    "id": "0852bcea-5485-4eb4-9c9c-360f7b82c154",
+                                    "name": "The default configuration was removed",
+                                    "originalRequest": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/group-defaults?priority=86564476",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "group-defaults"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "priority",
+                                                    "value": "86564476"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": ""
+                                },
+                                {
+                                    "id": "1a0ddab4-da81-4b8e-a127-743d3e729e87",
+                                    "name": "Missing or invalid paramater",
+                                    "originalRequest": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/group-defaults?priority=86564476",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "group-defaults"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "priority",
+                                                    "value": "86564476"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "Bad Request",
+                                    "code": 400,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": ""
+                                },
+                                {
+                                    "id": "4edd118d-191a-4ef3-81ed-328d57cf5c6b",
+                                    "name": "Internal server error: The default config was not removed",
+                                    "originalRequest": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/group-defaults?priority=86564476",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "group-defaults"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "priority",
+                                                    "value": "86564476"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "Internal Server Error",
+                                    "code": 500,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "{\n \"code\": 2,\n \"message\": \"of\"\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "/api/group-defaults",
+                            "id": "06797766-332e-4abf-90ed-f9f4b65cee44",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/group-defaults?priority=86564476",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "group-defaults"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "priority",
+                                            "value": "86564476"
+                                        }
+                                    ]
+                                },
+                                "description": "Gets the default configuration of a priority group"
+                            },
+                            "response": [
+                                {
+                                    "id": "83cd92f7-4dfd-40c5-86a0-2bb3f06fbcef",
+                                    "name": "The group defaults are returned",
+                                    "originalRequest": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/group-defaults?priority=86564476",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "group-defaults"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "priority",
+                                                    "value": "86564476"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "{\n \"priority\": 6969247,\n \"maxByteSize\": -41990756\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "/api/group-defaults",
+                            "id": "65d7594d-94fe-438b-bfa3-91d8ed5b5b00",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"priority\": 50552432,\n    \"maxByteSize\": -62372351\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/group-defaults",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "group-defaults"
+                                    ]
+                                },
+                                "description": "Insert or update a group's default configuration"
+                            },
+                            "response": [
+                                {
+                                    "id": "0e73c9f1-6f3f-44c9-a68a-757ec0022008",
+                                    "name": "The default was inserted/updated",
+                                    "originalRequest": {
+                                        "method": "POST",
+                                        "header": [],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"priority\": 50552432,\n    \"maxByteSize\": -62372351\n}",
+                                            "options": {
+                                                "raw": {
+                                                    "language": "json"
+                                                }
+                                            }
+                                        },
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/group-defaults",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "group-defaults"
+                                            ]
+                                        }
+                                    },
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": ""
+                                },
+                                {
+                                    "id": "97ec8d74-faa6-4d9e-9282-c66e15e2a1c3",
+                                    "name": "Missing or invalid paramters",
+                                    "originalRequest": {
+                                        "method": "POST",
+                                        "header": [],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"priority\": 50552432,\n    \"maxByteSize\": -62372351\n}",
+                                            "options": {
+                                                "raw": {
+                                                    "language": "json"
+                                                }
+                                            }
+                                        },
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/group-defaults",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "group-defaults"
+                                            ]
+                                        }
+                                    },
+                                    "status": "Bad Request",
+                                    "code": 400,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "enim eius"
+                                },
+                                {
+                                    "id": "656705de-5e66-459d-951c-a0133bb8f14c",
+                                    "name": "Internal server error",
+                                    "originalRequest": {
+                                        "method": "POST",
+                                        "header": [],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"priority\": 50552432,\n    \"maxByteSize\": -62372351\n}",
+                                            "options": {
+                                                "raw": {
+                                                    "language": "json"
+                                                }
+                                            }
+                                        },
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/group-defaults",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "group-defaults"
+                                            ]
+                                        }
+                                    },
+                                    "status": "Internal Server Error",
+                                    "code": 500,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "enim eius"
+                                }
+                            ]
+                        }
+                    ],
+                    "id": "b8b0724e-e608-48b5-96d7-12b947f51775"
+                },
+                {
+                    "name": "msg",
+                    "item": [
+                        {
+                            "name": "/api/msg",
+                            "id": "3f3c95b3-8f83-46d4-8e47-9a8b008e328f",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/msg?uuid=enim eius",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "msg"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "uuid",
+                                            "value": "enim eius",
+                                            "description": "(Required) "
+                                        }
+                                    ]
+                                },
+                                "description": "Removes a message from the store"
+                            },
+                            "response": [
+                                {
+                                    "id": "8170260a-d9b6-4c64-b07e-9c99f4a1d3ff",
+                                    "name": "Success response",
+                                    "originalRequest": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/msg?uuid=enim eius",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "msg"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "uuid",
+                                                    "value": "enim eius"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": ""
+                                },
+                                {
+                                    "id": "2969c945-38d4-4ed2-8603-67780f0955f4",
+                                    "name": "Missing or invalid uuid",
+                                    "originalRequest": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/msg?uuid=enim eius",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "msg"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "uuid",
+                                                    "value": "enim eius"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "Bad Request",
+                                    "code": 400,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "enim eius"
+                                },
+                                {
+                                    "id": "d84b1a80-59bd-4ede-9c90-8de0b31c7eac",
+                                    "name": "Internal server error",
+                                    "originalRequest": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/msg?uuid=enim eius",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "msg"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "uuid",
+                                                    "value": "enim eius"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "Internal Server Error",
+                                    "code": 500,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "enim eius"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "/api/msg",
+                            "id": "5e02f478-b798-4497-9010-ad61561f83a7",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/msg?uuid=enim eius&priority=86564476&reverse=false",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "msg"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "uuid",
+                                            "value": "enim eius"
+                                        },
+                                        {
+                                            "key": "priority",
+                                            "value": "86564476"
+                                        },
+                                        {
+                                            "key": "reverse",
+                                            "value": "false"
+                                        }
+                                    ]
+                                },
+                                "description": "Get a message from the store"
+                            },
+                            "response": [
+                                {
+                                    "id": "4908c070-510e-4139-85a0-5e20f91ef501",
+                                    "name": "Success response",
+                                    "originalRequest": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/msg?uuid=enim eius&priority=86564476&reverse=false",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "msg"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "uuid",
+                                                    "value": "enim eius"
+                                                },
+                                                {
+                                                    "key": "priority",
+                                                    "value": "86564476"
+                                                },
+                                                {
+                                                    "key": "reverse",
+                                                    "value": "false"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "appplication/json"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": ""
+                                },
+                                {
+                                    "id": "4e23e65c-2298-493a-a76a-9e4656d218ec",
+                                    "name": "Invalid parameter(s)",
+                                    "originalRequest": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/msg?uuid=enim eius&priority=86564476&reverse=true",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "msg"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "uuid",
+                                                    "value": "enim eius"
+                                                },
+                                                {
+                                                    "key": "priority",
+                                                    "value": "86564476"
+                                                },
+                                                {
+                                                    "key": "reverse",
+                                                    "value": "true"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "Bad Request",
+                                    "code": 400,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "enim eius"
+                                },
+                                {
+                                    "id": "5a475add-da36-44d5-962c-f33bcb1d81c9",
+                                    "name": "Internal server error",
+                                    "originalRequest": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/msg?uuid=enim eius&priority=86564476&reverse=true",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "msg"
+                                            ],
+                                            "query": [
+                                                {
+                                                    "key": "uuid",
+                                                    "value": "enim eius"
+                                                },
+                                                {
+                                                    "key": "priority",
+                                                    "value": "86564476"
+                                                },
+                                                {
+                                                    "key": "reverse",
+                                                    "value": "true"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "status": "Internal Server Error",
+                                    "code": 500,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "enim eius"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "/api/msg",
+                            "id": "0da7c652-cd54-470c-96a2-8a1cdaef8391",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"priority\": -5477182,\n    \"msg\": \"deserunt enim et dolore in\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/msg",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "msg"
+                                    ]
+                                },
+                                "description": "Add a message the store"
+                            },
+                            "response": [
+                                {
+                                    "id": "b0bcf861-28b8-44f5-966c-29cb1f802611",
+                                    "name": "Success response",
+                                    "originalRequest": {
+                                        "method": "POST",
+                                        "header": [],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"priority\": -5477182,\n    \"msg\": \"deserunt enim et dolore in\"\n}",
+                                            "options": {
+                                                "raw": {
+                                                    "language": "json"
+                                                }
+                                            }
+                                        },
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/msg",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "msg"
+                                            ]
+                                        }
+                                    },
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "{\n \"uuid\": \"\"\n}"
+                                },
+                                {
+                                    "id": "0b6c6473-8965-4320-aeab-121794c2760e",
+                                    "name": "Missing or invalid parameters",
+                                    "originalRequest": {
+                                        "method": "POST",
+                                        "header": [],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"priority\": -5477182,\n    \"msg\": \"deserunt enim et dolore in\"\n}",
+                                            "options": {
+                                                "raw": {
+                                                    "language": "json"
+                                                }
+                                            }
+                                        },
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/msg",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "msg"
+                                            ]
+                                        }
+                                    },
+                                    "status": "Bad Request",
+                                    "code": 400,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "enim eius"
+                                },
+                                {
+                                    "id": "003d5762-ab27-46e5-a41b-24940d44a666",
+                                    "name": "No error was encountered, but the store rejected the message",
+                                    "originalRequest": {
+                                        "method": "POST",
+                                        "header": [],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"priority\": -5477182,\n    \"msg\": \"deserunt enim et dolore in\"\n}",
+                                            "options": {
+                                                "raw": {
+                                                    "language": "json"
+                                                }
+                                            }
+                                        },
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/msg",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "msg"
+                                            ]
+                                        }
+                                    },
+                                    "status": "Conflict",
+                                    "code": 409,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "{\n \"code\": 92927256,\n \"message\": \"ut labore laboris incididunt\"\n}"
+                                },
+                                {
+                                    "id": "12cce592-990c-400a-8a77-2e94e2cff5a7",
+                                    "name": "Internal server error",
+                                    "originalRequest": {
+                                        "method": "POST",
+                                        "header": [],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"priority\": -5477182,\n    \"msg\": \"deserunt enim et dolore in\"\n}",
+                                            "options": {
+                                                "raw": {
+                                                    "language": "json"
+                                                }
+                                            }
+                                        },
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/msg",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "msg"
+                                            ]
+                                        }
+                                    },
+                                    "status": "Internal Server Error",
+                                    "code": 500,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "enim eius"
+                                }
+                            ]
+                        }
+                    ],
+                    "id": "7a1e48df-bbbc-404a-9b7d-00423e86b22b"
+                },
+                {
+                    "name": "stats",
+                    "item": [
+                        {
+                            "name": "/api/stats",
+                            "id": "68e8669f-7d2c-491e-98f1-e89003ecf3ce",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/stats",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "stats"
+                                    ]
+                                },
+                                "description": "Reset the store's inserted, deleted, and pruned count statistics"
+                            },
+                            "response": [
+                                {
+                                    "id": "94e0fdce-96d0-4c7c-831a-115af8a92c0b",
+                                    "name": "The store's statistics were reset",
+                                    "originalRequest": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/stats",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "stats"
+                                            ]
+                                        }
+                                    },
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "{\n \"inserted\": -59225154,\n \"deleted\": -50683227,\n \"pruned\": 90540943\n}"
+                                },
+                                {
+                                    "id": "ee2223ec-3db9-4990-93cf-81c57b01f4a9",
+                                    "name": "Internal server error: The stats were not reset.",
+                                    "originalRequest": {
+                                        "method": "DELETE",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/stats",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "stats"
+                                            ]
+                                        }
+                                    },
+                                    "status": "Internal Server Error",
+                                    "code": 500,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": ""
+                                }
+                            ]
+                        },
+                        {
+                            "name": "/api/stats",
+                            "id": "b771c90d-573c-4441-aa61-66364816a26f",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/stats",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "stats"
+                                    ]
+                                },
+                                "description": "Get the store's inserted, deleted, and pruned count statistics"
+                            },
+                            "response": [
+                                {
+                                    "id": "c09cda0b-a5c0-4eea-9eb2-6e350f5218ae",
+                                    "name": "The store's statistics are returned",
+                                    "originalRequest": {
+                                        "method": "GET",
+                                        "header": [],
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/stats",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "stats"
+                                            ]
+                                        }
+                                    },
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "json",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "application/json"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": "{\n \"data\": {\n  \"inserted\": 36665405,\n  \"deleted\": -4023362,\n  \"pruned\": 68189866\n }\n}"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "/api/stats",
+                            "id": "5489bc3d-5fc5-4903-8a4e-55d6bf92c52c",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"replace\": {\n        \"inserted\": 86234799,\n        \"deleted\": 98249506,\n        \"pruned\": 47162783\n    }\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/stats",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "stats"
+                                    ]
+                                },
+                                "description": "Update the store's statistics"
+                            },
+                            "response": [
+                                {
+                                    "id": "68e2934b-28e8-46b0-a684-6bbfe9fc5021",
+                                    "name": "The store's statistics were updated",
+                                    "originalRequest": {
+                                        "method": "PUT",
+                                        "header": [],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"replace\": {\n        \"inserted\": 86234799,\n        \"deleted\": 98249506,\n        \"pruned\": 47162783\n    }\n}",
+                                            "options": {
+                                                "raw": {
+                                                    "language": "json"
+                                                }
+                                            }
+                                        },
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/stats",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "stats"
+                                            ]
+                                        }
+                                    },
+                                    "status": "OK",
+                                    "code": 200,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": ""
+                                },
+                                {
+                                    "id": "d6f9801d-a1b5-4d77-8368-579d1c03fbfc",
+                                    "name": "Missing or invalid parameters",
+                                    "originalRequest": {
+                                        "method": "PUT",
+                                        "header": [],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"replace\": {\n        \"inserted\": 86234799,\n        \"deleted\": 98249506,\n        \"pruned\": 47162783\n    }\n}",
+                                            "options": {
+                                                "raw": {
+                                                    "language": "json"
+                                                }
+                                            }
+                                        },
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/stats",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "stats"
+                                            ]
+                                        }
+                                    },
+                                    "status": "Bad Request",
+                                    "code": 400,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": ""
+                                },
+                                {
+                                    "id": "02da9e2b-8404-497b-ab64-226cfce830b7",
+                                    "name": "Internal server error: The stats were not updated",
+                                    "originalRequest": {
+                                        "method": "PUT",
+                                        "header": [],
+                                        "body": {
+                                            "mode": "raw",
+                                            "raw": "{\n    \"replace\": {\n        \"inserted\": 86234799,\n        \"deleted\": 98249506,\n        \"pruned\": 47162783\n    }\n}",
+                                            "options": {
+                                                "raw": {
+                                                    "language": "json"
+                                                }
+                                            }
+                                        },
+                                        "url": {
+                                            "raw": "{{baseUrl}}/api/stats",
+                                            "host": [
+                                                "{{baseUrl}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "stats"
+                                            ]
+                                        }
+                                    },
+                                    "status": "Internal Server Error",
+                                    "code": 500,
+                                    "_postman_previewlanguage": "text",
+                                    "header": [
+                                        {
+                                            "key": "Content-Type",
+                                            "value": "text/plain"
+                                        }
+                                    ],
+                                    "cookie": [],
+                                    "responseTime": null,
+                                    "body": ""
+                                }
+                            ]
+                        }
+                    ],
+                    "id": "cae3f978-6a71-4e79-9c05-833e756d4d3f"
+                },
+                {
+                    "name": "Exports messages to a file, while removing the messages from the store",
+                    "id": "d0f38a77-49d3-4c09-b0cf-8931538e0efa",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/export?directory=enim eius&priority=86564476&rangeStart=86564476&rangeEnd=86564476",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "export"
+                            ],
+                            "query": [
+                                {
+                                    "key": "directory",
+                                    "value": "enim eius",
+                                    "description": "(Required) The directory to save the export file in"
+                                },
+                                {
+                                    "key": "priority",
+                                    "value": "86564476"
+                                },
+                                {
+                                    "key": "rangeStart",
+                                    "value": "86564476"
+                                },
+                                {
+                                    "key": "rangeEnd",
+                                    "value": "86564476"
+                                }
+                            ]
+                        }
+                    },
+                    "response": [
+                        {
+                            "id": "acf29fee-9f60-40ba-9994-67143372a1b6",
+                            "name": "Success response",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/export?directory=enim eius&priority=86564476&rangeStart=86564476&rangeEnd=86564476",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "export"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "directory",
+                                            "value": "enim eius"
+                                        },
+                                        {
+                                            "key": "priority",
+                                            "value": "86564476"
+                                        },
+                                        {
+                                            "key": "rangeStart",
+                                            "value": "86564476"
+                                        },
+                                        {
+                                            "key": "rangeEnd",
+                                            "value": "86564476"
+                                        }
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "text",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "text/plain"
+                                }
+                            ],
+                            "cookie": [],
+                            "responseTime": null,
+                            "body": ""
+                        },
+                        {
+                            "id": "acf13997-0d9b-4440-bddb-eb6e44ab2e0c",
+                            "name": "Bad request: Missing or invalid parameter",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/export?directory=enim eius&priority=86564476&rangeStart=86564476&rangeEnd=86564476",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "export"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "directory",
+                                            "value": "enim eius"
+                                        },
+                                        {
+                                            "key": "priority",
+                                            "value": "86564476"
+                                        },
+                                        {
+                                            "key": "rangeStart",
+                                            "value": "86564476"
+                                        },
+                                        {
+                                            "key": "rangeEnd",
+                                            "value": "86564476"
+                                        }
+                                    ]
+                                }
+                            },
+                            "status": "Bad Request",
+                            "code": 400,
+                            "_postman_previewlanguage": "text",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "text/plain"
+                                }
+                            ],
+                            "cookie": [],
+                            "responseTime": null,
+                            "body": ""
+                        },
+                        {
+                            "id": "7c909f76-14d3-44dc-9517-c37e0ee0249e",
+                            "name": "Error response",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/export?directory=enim eius&priority=86564476&rangeStart=86564476&rangeEnd=86564476",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "export"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "directory",
+                                            "value": "enim eius"
+                                        },
+                                        {
+                                            "key": "priority",
+                                            "value": "86564476"
+                                        },
+                                        {
+                                            "key": "rangeStart",
+                                            "value": "86564476"
+                                        },
+                                        {
+                                            "key": "rangeEnd",
+                                            "value": "86564476"
+                                        }
+                                    ]
+                                }
+                            },
+                            "status": "Internal Server Error",
+                            "code": 500,
+                            "_postman_previewlanguage": "text",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "text/plain"
+                                }
+                            ],
+                            "cookie": [],
+                            "responseTime": null,
+                            "body": ""
+                        }
+                    ]
+                }
+            ],
+            "id": "e73dac75-ba34-4ae3-bf5d-58d3497045da"
+        }
+    ],
+    "variable": [
+        {
+            "id": "29a0e13c-a129-4b0f-ae13-b5b8a85ccb9b",
+            "key": "baseUrl",
+            "value": "localhost:8080",
+            "type": "string"
+        }
+    ]
+}

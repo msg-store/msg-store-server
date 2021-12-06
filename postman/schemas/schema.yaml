@@ -1,0 +1,448 @@
+openapi: 3.0.0
+info:
+  version: '0.1.0'
+  title: 'msg-store'
+servers:
+  - url: 'localhost:8080'
+paths:
+  /api/export:
+    get:
+      summary: 'Exports messages to a file, while removing the messages from the store'
+      parameters:
+        - name: directory
+          in: query
+          description: "The directory to save the export file in"
+          required: true
+          schema:
+            type: string
+        - name: priority
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: rangeStart
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: rangeEnd
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: "Success response"
+        '400':
+          description: "Bad request: Missing or invalid parameter"
+        '500':
+          description: "Error response"
+
+  /api/group:
+    delete:
+      summary: "Remove a group and it's messages from the store"
+      parameters:
+        - name: priority
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: "Success response"
+        '400':
+          description: "Bad request: Missing parameter"
+        '500':
+          description: "Internal server error"
+    get:
+      summary: 'Get group level metadata'
+      parameters:
+        - name: priority
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: includeMsgData
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: "Returns metadata about groups"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    oneOf:
+                      - $ref: '#/components/schemas/GroupGetOkOne'
+                      - type: array
+                        items:
+                          $ref: "#/components/schemas/GroupGetOkOne"
+        '400':
+          description: 'Missing or invalid paramater'
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: 'Internal server error'
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /api/group-defaults:
+    delete:
+      description: "Remove default configuration for a priority group"
+      parameters:
+        - name: priority
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: "The default configuration was removed"
+        '400':
+          description: "Missing or invalid paramater"
+        '500':
+          description: "Internal server error: The default config was not removed"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    minimum: 1
+                    maximum: 3
+                  message:
+                    type: string
+                required:
+                  - code
+                  - message
+    get:
+      description: "Gets the default configuration of a priority group"
+      parameters:
+        - name: priority
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: "The group defaults are returned"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/GroupDefaultsGetOkOne"
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/GroupDefaultsGetOkOne"           
+    post:
+      description: "Insert or update a group's default configuration"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                priority:
+                  type: integer
+                  format: int32
+                maxByteSize:
+                  type: integer
+                  format: int32
+              required:
+                - priority
+                - maxByteSize
+      responses:
+        '200':
+          description: "The default was inserted/updated"
+        '400':
+          description: "Missing or invalid paramters"
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: 'Internal server error'
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /api/msg:
+    delete:
+      description: "Removes a message from the store"
+      parameters:
+        - name: uuid
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Success response'
+        '400':
+          description: 'Missing or invalid uuid'
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: 'Internal server error'
+          content:
+            text/plain:
+              schema:
+                type: string
+    get:
+      description: 'Get a message from the store'
+      parameters:
+        - name: uuid
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: priority
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: reverse
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: 'Success response'
+          content:
+            appplication/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      uuid: 
+                        type: string
+                      msg:
+                        type: string
+        '400':
+          description: 'Invalid parameter(s)'
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: 'Internal server error'
+          content:
+            text/plain:
+              schema:
+                type: string
+    post:
+      description: "Add a message the store"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                priority:
+                  type: integer
+                  format: int32
+                msg:
+                  type: string
+              required:
+                - priority
+                - msg
+      responses:
+        '200':
+          description: 'Success response'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    type: string
+                required:
+                  - uuid
+        '400':
+          description: 'Missing or invalid parameters'
+          content:
+            text/plain:
+              schema:
+                type: string
+        '409':
+          description: 'No error was encountered, but the store rejected the message'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                  message:
+                    type: string
+                required:
+                  - code
+                  - message
+        '500':
+          description: 'Internal server error'
+          content:
+            text/plain:
+              schema:
+                type: string
+  
+  /api/stats:
+    delete:
+      description: "Reset the store's inserted, deleted, and pruned count statistics"
+      responses:
+        '200':
+          description: "The store's statistics were reset"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inserted:
+                    type: integer
+                    format: int32
+                  deleted:
+                    type: integer
+                    format: int32
+                  pruned:
+                    type: integer
+                    format: int32
+                required:
+                  - inserted
+                  - deleted
+                  - pruned
+        '500':
+          description: 'Internal server error: The stats were not reset.'
+    get:
+      description: "Get the store's inserted, deleted, and pruned count statistics"
+      responses:
+        '200':
+          description: "The store's statistics are returned"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      inserted:
+                        type: integer
+                        format: int32
+                      deleted:
+                        type: integer
+                        format: int32
+                      pruned:
+                        type: integer
+                        format: int32
+    put:
+      description: "Update the store's statistics"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  properties:
+                    replace:
+                      type: object
+                      properties:
+                        inserted:
+                          type: integer
+                          format: int32
+                        deleted:
+                          type: integer
+                          format: int32
+                        pruned:
+                          type: integer
+                          format: int32
+                - type: object
+                  properties:
+                    add:
+                      type: object
+                      properties:
+                        inserted:
+                          type: integer
+                          format: int32
+                        deleted:
+                          type: integer
+                          format: int32
+                        pruned:
+                          type: integer
+                          format: int32
+      responses:
+        '200':
+          description: "The store's statistics were updated"
+        '400':
+          description: "Missing or invalid parameters"
+        '500':
+          description: 'Internal server error: The stats were not updated'
+
+components:
+  schemas:
+    GroupGetOkOne:
+      type: object
+      properties:
+        priority:
+          type: integer
+          format: int32
+        byteSize:
+          type: integer
+          format: int32
+        maxByteSize:
+          type: integer
+          format: int32
+        msgCount:
+          type:  integer
+          format: int32
+        messages:
+          type: array
+          items:
+            type: object
+            properties:
+              uuid:
+                type: string
+              byteSize:
+                type: integer
+                format: int32
+      required:
+        - priority
+        - byteSize
+        - msgCount
+        - messages
+
+    GroupDefaultsGetOkOne:
+      type: object
+      properties:
+        priority:
+          type: integer
+          format: int32
+        maxByteSize:
+          type: integer
+          format: int32
+      required:
+        - priority
