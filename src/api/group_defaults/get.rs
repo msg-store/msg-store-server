@@ -26,8 +26,8 @@ pub struct GroupDefaults {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum Reply {
-    Ok { data: Option<GroupDefaults> },
-    OkMany { data: Vec<GroupDefaults> }
+    Ok(Option<GroupDefaults>),
+    OkMany(Vec<GroupDefaults>)
 }
 
 pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
@@ -43,9 +43,9 @@ pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
                 priority: priority.clone(),
                 max_byte_size: defaults.max_byte_size
             };
-            HttpResponse::Ok().json(Reply::Ok{data: Some(group_defaults)})
+            HttpResponse::Ok().json(Reply::Ok(Some(group_defaults)))
         } else {
-            HttpResponse::Ok().json(Reply::Ok{data: None})
+            HttpResponse::Ok().json(Reply::Ok(None))
         }
     } else {
         let data = store.group_defaults.iter().map(|(priority, defaults)| {
@@ -54,6 +54,6 @@ pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
                 max_byte_size: defaults.max_byte_size
             }
         }).collect::<Vec<GroupDefaults>>();
-        HttpResponse::Ok().json(Reply::OkMany{data})
+        HttpResponse::Ok().json(Reply::OkMany(data))
     }    
 }

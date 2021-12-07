@@ -26,7 +26,7 @@ pub struct StoredPacket {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Info {
-    directory: String,
+    output: String,
     priority: Option<u32>,
     range_start: Option<u32>,
     range_end: Option<u32>
@@ -94,7 +94,7 @@ pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
 
     };
 
-    let file_path = match PathBuf::from_str(&info.directory) {
+    let file_path = match PathBuf::from_str(&info.output) {
         Ok(dir_path) => dir_path,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish();

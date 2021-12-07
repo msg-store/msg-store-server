@@ -45,8 +45,8 @@ pub struct Group {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum Reply {
-    Ok { data: Option<Group> },
-    OkMany { data: Vec<Group> }
+    Ok(Option<Group>),
+    OkMany(Vec<Group>)
 }
 
 pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
@@ -73,9 +73,9 @@ pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
                     None => vec![]
                 } 
             };
-            HttpResponse::Ok().json(Reply::Ok{data: Some(group)})
+            HttpResponse::Ok().json(Reply::Ok(Some(group)))
         } else {
-            HttpResponse::Ok().json(Reply::Ok{data: None})
+            HttpResponse::Ok().json(Reply::Ok(None))
         }
     } else {
         let data = store.groups_map.iter().map(|(priority, group)| {
@@ -95,7 +95,7 @@ pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
                 }
             }
         }).collect::<Vec<Group>>();
-        HttpResponse::Ok().json(Reply::OkMany{data})
+        HttpResponse::Ok().json(Reply::OkMany(data))
     }
     
 }

@@ -35,7 +35,7 @@ pub struct Stats {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum Reply {
-    Ok { data: Stats }
+    Ok(Stats)
 }
 
 pub fn get(data: Data<AppData>) -> HttpResponse {
@@ -45,9 +45,9 @@ pub fn get(data: Data<AppData>) -> HttpResponse {
             return HttpResponse::InternalServerError().finish();
         }
     };
-    HttpResponse::Ok().json(Reply::Ok{ data: Stats {
+    HttpResponse::Ok().json(Reply::Ok(Stats {
         inserted: store.msgs_inserted,
         deleted: store.msgs_deleted,
         pruned: store.msgs_pruned
-    } })
+    }))
 }

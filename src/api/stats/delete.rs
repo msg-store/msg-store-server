@@ -17,7 +17,7 @@ use serde::{
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum Reply {
-    Ok { data: Stats }
+    Ok(Stats)
 }
 
 pub fn delete(data: Data<AppData>) -> HttpResponse {
@@ -35,5 +35,5 @@ pub fn delete(data: Data<AppData>) -> HttpResponse {
     store.msgs_inserted = 0;
     store.msgs_deleted = 0;
     store.msgs_pruned = 0;
-    HttpResponse::Ok().json(Reply::Ok { data })
+    HttpResponse::Ok().json(Reply::Ok(data))
 }

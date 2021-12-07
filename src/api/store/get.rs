@@ -36,7 +36,7 @@ pub struct StoreData {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum Reply {
-    Ok { data: StoreData }
+    Ok(StoreData)
 }
 
 pub fn get(data: Data<AppData>) -> HttpResponse {
@@ -68,5 +68,5 @@ pub fn get(data: Data<AppData>) -> HttpResponse {
         groups,
         group_defaults
     };
-    HttpResponse::Ok().json(Reply::Ok{ data })
+    HttpResponse::Ok().json(Reply::Ok(data))
 }
