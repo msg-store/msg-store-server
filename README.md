@@ -5,48 +5,51 @@ The msg-store allows for messages to be forwarded on a priority basis where band
 
 ## Getting started
 ```bash
-cargo install msg-store-server
+$ cargo install msg-store-server
 ```
 or locally
 ```bash
-cargo install --path .
+$ cargo install --path .
 ```
 
 for the leveldb backend use the level feature
 ```
-cargo install --path . --no-default-features --features level
+$ cargo install --path . --no-default-features --features level
 ```
 
 run with
 ```bash
-msg-store-server
+$ msg-store-server
 ```
 
 Adding a message
 ```bash
 # request:
-curl --location --request POST 'localhost:8080/api/msg' \
+$ curl --location -H "Content-Type: application/json" --request POST 'localhost:8080/api/msg' \
 --data-raw '{
     "priority": 1,
     "msg": "sit exercitation eu aliquip ipsum"
 }'
+```
 
-# 200 response:
-{ "uuid": "1638901859659994278-1" }
+Response:
+```json
+{ 
+    "uuid": "1638901859659994278-1"
+}
 ```
 
 Getting a message
 ```bash
-# request
-curl --location --request GET 'localhost:8080/api/msg'
+$ curl --location -H "Content-Type: application/json" --request GET 'localhost:8080/api/msg'
+```
 
-# response:
+Response:
+```json
 { 
-    "data": { 
-        "uuid": "1638901859659994278-1", 
-        "msg": "sit exercitation eu aliquip ipsum" 
-    } 
-}
+    "uuid": "1638901859659994278-1", 
+    "msg": "sit exercitation eu aliquip ipsum" 
+} 
 ```
 
 * Messages are forwarded on a highest priority then oldest status basis.
@@ -64,38 +67,42 @@ Four message are needed to be forwarded to a distant server.
 The first message is placed in priority 1, the second in priority 2, the third message in priority 1, and the fourth in priority 2 again as shown in the rust example and table below.
 ```bash
 # first message
-curl --location --request POST 'localhost:8080/api/msg' \
+$ curl --location -H "Content-Type: application/json" --request POST 'localhost:8080/api/msg' \
 --data-raw '{
     "priority": 1,
     "msg": "my first message"
 }'
+
 # response
 { "uuid": "1638909040889405720-1" }
 
 # second message
-curl --location --request POST 'localhost:8080/api/msg' \
+$ curl --location -H "Content-Type: application/json" --request POST 'localhost:8080/api/msg' \
 --data-raw '{
     "priority": 2,
     "msg": "my second message"
 }'
+
 # response
 { "uuid": "1638909059786945856-1" }
 
 # thrid message
-curl --location --request POST 'localhost:8080/api/msg' \
+$ curl --location -H "Content-Type: application/json" --request POST 'localhost:8080/api/msg' \
 --data-raw '{
     "priority": 1,
     "msg": "my thrid message"
 }'
+
 # response
 { "uuid": "1638909073359330845-1" }
 
 # forth message
-curl --location --request POST 'localhost:8080/api/msg' \
+$ curl --location -H "Content-Type: application/json" --request POST 'localhost:8080/api/msg' \
 --data-raw '{
     "priority": 2,
     "msg": "my fourth message"
 }'
+
 # response
 { "uuid": "1638909087105753215-1" }
 
@@ -118,11 +125,9 @@ curl --location --request GET 'localhost:8080/api/msg'
 Response:
 ```json
 { 
-    "data": { 
-        "uuid": "1638909059786945856-1", 
-        "msg": "my second message" 
-    } 
-}
+    "uuid": "1638909059786945856-1", 
+    "msg": "my second message" 
+} 
 ```
 
 Request a message from a specific priority group
@@ -131,11 +136,9 @@ curl --location --request GET 'localhost:8080/api/msg?priority=1'
 ```
 ```json
 { 
-    "data": { 
-        "uuid": "1638909040889405720-1", 
-        "msg": "my first message" 
-    } 
-}
+    "uuid": "1638909040889405720-1", 
+    "msg": "my first message" 
+} 
 ```
 
 Request a specific message
@@ -146,10 +149,8 @@ curl --location --request GET 'localhost:8080/api/msg?uuid=1638909073359330845-1
 Response:
 ```json
 { 
-    "data": { 
-        "uuid": "1638909073359330845-1", 
-        "msg": "my thrid message" 
-    } 
+    "uuid": "1638909073359330845-1", 
+    "msg": "my thrid message" 
 }
 ```
 
@@ -160,10 +161,8 @@ curl --location --request GET 'localhost:8080/api/msg?reverse=true'
 Response:
 ```json
 { 
-    "data": { 
-        "uuid": "1638909087105753215-1", 
-        "msg": "my fourth message" 
-    } 
+    "uuid": "1638909087105753215-1", 
+    "msg": "my fourth message" 
 }
 ```
 
