@@ -190,7 +190,7 @@ cfg_if::cfg_if! {
             
             InitResult {
                 host: get_host(&matches, &store_config),
-                store: open(leveldb_location.as_path()),
+                store: open(leveldb_location.as_path()).unwrap(),
                 store_config,
                 config_location,
                 update_config
