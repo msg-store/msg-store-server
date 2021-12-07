@@ -59,9 +59,9 @@ async fn main() -> std::io::Result<()> {
             .route("/api/group", web::delete().to(api::group::delete::delete))
             .route("/api/group", web::get().to(api::group::get::get))
             
-            .route("/api/group_defaults", web::delete().to(api::group_defaults::delete::delete))
-            .route("/api/group_defaults", web::get().to(api::group_defaults::get::get))
-            .route("/api/group_defaults", web::post().to(api::group_defaults::post::post))
+            .route("/api/group-defaults", web::delete().to(api::group_defaults::delete::delete))
+            .route("/api/group-defaults", web::get().to(api::group_defaults::get::get))
+            .route("/api/group-defaults", web::post().to(api::group_defaults::post::post))
             
             .route("/api/msg", web::get().to(api::msg::get::get))
             .route("/api/msg", web::delete().to(api::msg::delete::delete))

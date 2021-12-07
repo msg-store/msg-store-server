@@ -24,7 +24,7 @@ pub struct MsgData {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Info {
     uuid: Option<String>,
-    priority: Option<i32>,
+    priority: Option<u32>,
     reverse: Option<bool>
 }
 
@@ -41,10 +41,6 @@ pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
             return HttpResponse::InternalServerError().finish();
         }
     };
-    // let uuid = match &info.uuid {
-    //     Some(str) => Some(Uuid::from_string(&str)),
-    //     None => None
-    // };
     let mut options = GetOptions::default();
     if let Some(uuid_string) = info.uuid.clone() {
         let uuid = Uuid::from_string(&uuid_string);

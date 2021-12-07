@@ -24,13 +24,15 @@ pub struct StoredPacket {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Info {
     directory: String,
-    priority: Option<i32>,
-    range: Option<(Option<i32>, Option<i32>)>
+    priority: Option<u32>,
+    range_start: Option<u32>,
+    range_end: Option<u32>
 }
 
-pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
+pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {    
 
     let list = {
 
@@ -49,18 +51,14 @@ pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
                 vec![]
             }
 
-        } else if let Some((start, end)) = info.range {
+        } else if let Some(start) = info.range_start {
 
-            let start = if let Some(start) = start {
-                start
-            } else {
-                i32::MIN
-            };
 
-            let end = if let Some(end) = end {
+
+            let end = if let Some(end) = info.range_end {
                 end
             } else {
-                i32::MAX
+                u32::MAX
             };
 
             let mut list = vec![];
@@ -70,6 +68,17 @@ pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
 
             list
 
+        } else if let Some(end) = info.range_end {
+
+            let start = u32::MIN;
+
+            let mut list = vec![];
+            for (_priority, group) in store.groups_map.range((Included(&start), Included(&end))) {
+                list.append(&mut group.msgs_map.keys().map(|uuid| uuid.clone()).collect::<Vec<Uuid>>())
+            }
+
+            list
+            
         } else {
 
             let mut list = vec![];

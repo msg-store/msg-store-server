@@ -13,23 +13,23 @@ use serde::{
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GroupDefaults {
-    priority: i32,
-    max_byte_size: Option<i32>
+    priority: u32,
+    max_byte_size: Option<u32>
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GroupData {
-    priority: i32,
-    byte_size: i32,
-    max_byte_size: Option<i32>,
+    priority: u32,
+    byte_size: u32,
+    max_byte_size: Option<u32>,
     msg_count: usize
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Stats {
-    pub inserted: i32,
-    pub deleted: i32,
-    pub pruned: i32
+    pub inserted: u32,
+    pub deleted: u32,
+    pub pruned: u32
 }
 
 #[derive(Debug, Deserialize, Serialize)]

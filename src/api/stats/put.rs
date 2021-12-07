@@ -13,10 +13,17 @@ use serde::{
 };
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct Body {
-    pub inserted: Option<i32>,
-    pub deleted: Option<i32>,
-    pub pruned: Option<i32>
+pub struct StatsProps {
+    pub inserted: Option<u32>,
+    pub deleted: Option<u32>,
+    pub pruned: Option<u32>
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Body {
+    Replace { inserted: Option<u32>, deleted: Option<u32>, pruned: Option<u32> },
+    Add { inserted: Option<u32>, deleted: Option<u32>, pruned: Option<u32> }
 }
 
 pub fn update(data: Data<AppData>, body: Json<Body>) -> HttpResponse {
@@ -26,14 +33,30 @@ pub fn update(data: Data<AppData>, body: Json<Body>) -> HttpResponse {
             return HttpResponse::InternalServerError().finish();
         }
     };
-    if let Some(inserted) = body.inserted {
-        store.msgs_inserted = inserted;
+    match body.0 {
+        Body::Replace { inserted, deleted, pruned } => {
+            if let Some(inserted) = inserted {
+                store.msgs_inserted = inserted;
+            }
+            if let Some(deleted) = deleted {
+                store.msgs_deleted = deleted;
+            }
+            if let Some(pruned) = pruned {
+                store.msgs_pruned = pruned;
+            }
+        },
+        Body::Add { inserted, deleted, pruned } => {
+            if let Some(inserted) = inserted {
+                store.msgs_inserted += inserted;
+            }
+            if let Some(deleted) = deleted {
+                store.msgs_deleted += deleted;
+            }
+            if let Some(pruned) = pruned {
+                store.msgs_pruned += pruned;
+            }
+        }
     }
-    if let Some(deleted) = body.deleted {
-        store.msgs_deleted = deleted;
-    }
-    if let Some(pruned) = body.pruned {
-        store.msgs_pruned = pruned;
-    }
+
     HttpResponse::Ok().finish()    
 }

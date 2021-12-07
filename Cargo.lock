@@ -1160,26 +1160,20 @@ dependencies = [
 
 [[package]]
 name = "msg-store"
-version = "0.5.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37d21a05b580baca8220c298c33812790dc8b58b765f348f99fafc2907c12a7b"
-
-[[package]]
-name = "msg-store"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1cff9b86c1ba1d628c973e1d65c8e3d5095e4a51cc8a7e7aa4ad9d2f113b0a8"
+checksum = "5b25ce71f58d078d54a09f7cd461056208f8afa6b4943a0009a024fb8604d64d"
 
 [[package]]
 name = "msg-store-plugin-leveldb"
-version = "0.4.2"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ebfad274e5be559a096133f40e541caedef695b403d68423ee09f2f9a042eeb"
+checksum = "5a57bebcf0528930c9bd9048ddd0ec41923703a0f2f7ffb3af0bf8def190c62b"
 dependencies = [
  "bincode",
  "db-key",
  "leveldb",
- "msg-store 0.5.0",
+ "msg-store",
  "serde",
 ]
 
@@ -1193,7 +1187,7 @@ dependencies = [
  "cfg-if 1.0.0",
  "clap",
  "dirs",
- "msg-store 0.6.0",
+ "msg-store",
  "msg-store-plugin-leveldb",
  "serde",
  "serde_json",

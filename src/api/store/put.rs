@@ -18,7 +18,7 @@ use serde::{
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Body {
-    max_byte_size: Option<i32>
+    max_byte_size: Option<u32>
 }
 
 pub fn update(data: Data<AppData>, body: Json<Body>) -> HttpResponse {

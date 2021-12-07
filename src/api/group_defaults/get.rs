@@ -13,13 +13,14 @@ use serde::{
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Info {
-    priority: Option<i32>
+    priority: Option<u32>
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy)]
+#[serde(rename_all = "camelCase")]
 pub struct GroupDefaults {
-    priority: i32,
-    max_byte_size: Option<i32>
+    priority: u32,
+    max_byte_size: Option<u32>
 }
 
 #[derive(Debug, Deserialize, Serialize)]

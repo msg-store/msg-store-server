@@ -18,8 +18,8 @@ use std::{
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct GroupConfig {
-    pub priority: i32,
-    pub max_byte_size: Option<i32>
+    pub priority: u32,
+    pub max_byte_size: Option<u32>
 }
 
 cfg_if::cfg_if! {
@@ -29,8 +29,8 @@ cfg_if::cfg_if! {
         #[derive(Debug, Deserialize, Serialize)]
         pub struct StoreConfig {
             pub host: Option<String>,
-            pub port: Option<i32>,
-            pub max_byte_size: Option<i32>,
+            pub port: Option<u32>,
+            pub max_byte_size: Option<u32>,
             pub groups: Option<Vec<GroupConfig>>,
             pub no_update: Option<bool>
         }
@@ -56,8 +56,8 @@ cfg_if::cfg_if! {
         #[derive(Debug, Deserialize, Serialize)]
         pub struct StoreConfig {
             pub host: Option<String>,
-            pub port: Option<i32>,
-            pub max_byte_size: Option<i32>,
+            pub port: Option<u32>,
+            pub max_byte_size: Option<u32>,
             pub groups: Option<Vec<GroupConfig>>,
             pub leveldb: Option<LeveldbConfig>,
             pub no_update: Option<bool>

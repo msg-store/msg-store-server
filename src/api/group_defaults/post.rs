@@ -20,9 +20,10 @@ use serde::{
 use std::borrow::BorrowMut;
 
 #[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Body {
-    priority: i32,
-    max_byte_size: Option<i32>
+    priority: u32,
+    max_byte_size: Option<u32>
 }
 
 pub fn post(data: Data<AppData>, body: Json<Body>) -> HttpResponse {

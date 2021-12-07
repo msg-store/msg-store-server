@@ -14,7 +14,7 @@ use serde::{
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Info {
-    priority: i32
+    priority: u32
 }
 
 pub fn delete(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
