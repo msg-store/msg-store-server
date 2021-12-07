@@ -1,13 +1,8 @@
 use actix_web::{
     HttpResponse,
-    web::{
-        Data
-    }
+    web::Data
 };
-use crate::{
-    AppData,
-    fmt_result
-};
+use crate::AppData;
 
 use serde::{
     Deserialize, 
@@ -16,22 +11,22 @@ use serde::{
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GroupDefaults {
-    priority: i32,
-    max_byte_size: Option<i32>
+    priority: u32,
+    max_byte_size: Option<u32>
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GroupData {
-    priority: i32,
-    byte_size: i32,
-    max_byte_size: Option<i32>,
+    priority: u32,
+    byte_size: u32,
+    max_byte_size: Option<u32>,
     msg_count: usize
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct StoreData {
-    byte_size: i32,
-    max_byte_size: Option<i32>,
+    byte_size: u32,
+    max_byte_size: Option<u32>,
     msg_count: usize,
     group_count: usize,
     groups: Vec<GroupData>,
@@ -45,8 +40,8 @@ pub enum Reply {
 }
 
 pub fn get(data: Data<AppData>) -> HttpResponse {
-    let store = match fmt_result!(data.store.try_lock()) {
-        Ok(db) => db,
+    let store = match data.store.try_lock() {
+        Ok(store) => store,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish();
         }

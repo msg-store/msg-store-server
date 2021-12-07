@@ -6,10 +6,8 @@ use actix_web::{
     }
 };
 use crate::{
-    AppData,
-    ConfigGaurd,
-    StoreGaurd,
-    fmt_result
+    api::update_config,
+    AppData
 };
 use msg_store::store::StoreDefaults;
 
@@ -20,40 +18,30 @@ use serde::{
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Body {
-    max_byte_size: Option<i32>
-}
-
-pub fn update_store(
-    store: &mut StoreGaurd,
-    config: &mut ConfigGaurd,
-    // config_location: &Option<PathBuf>,
-    body: &Body) -> Result<(), String> {
-    store.max_byte_size = body.max_byte_size;
-    let defaults = StoreDefaults { max_byte_size: body.max_byte_size };
-    store.update_store_defaults(&defaults);
-    config.max_byte_size = body.max_byte_size;
-    fmt_result!(config.update_config_file())?;
-    Ok(())
+    max_byte_size: Option<u32>
 }
 
 pub fn update(data: Data<AppData>, body: Json<Body>) -> HttpResponse {
-    let mut store = match fmt_result!(data.store.try_lock()) {
+    let mut store = match data.store.try_lock() {
         Ok(store) => store,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish();
         }
     };
-    let mut config = match fmt_result!(data.config.try_lock()) {
+    let mut config = match data.config.try_lock() {
         Ok(config) => config,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish();
         }
     };
-    match fmt_result!(update_store(&mut store, &mut config, &body.into_inner())) {
-        Ok(_) => HttpResponse::Ok().finish(),
-        Err(_error) => {
-            HttpResponse::InternalServerError().finish()
-        }
+    store.max_byte_size = body.max_byte_size;
+    let defaults = StoreDefaults { max_byte_size: body.max_byte_size };
+    if let Err(_error) = store.update_store_defaults(&defaults) {
+        return HttpResponse::InternalServerError().finish();
     }
-    
+    config.max_byte_size = body.max_byte_size;
+    if let Err(_error) = update_config(&mut config, &data.config_location) {
+        return HttpResponse::InternalServerError().finish();
+    }
+    HttpResponse::Ok().finish()    
 }

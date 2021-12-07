@@ -5,10 +5,7 @@ use actix_web::{
         Query
     }
 };
-use crate::{
-    AppData,
-    fmt_result
-};
+use crate::AppData;
 use serde::{
     Deserialize, 
     Serialize
@@ -16,13 +13,14 @@ use serde::{
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Info {
-    priority: Option<i32>
+    priority: Option<u32>
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy)]
+#[serde(rename_all = "camelCase")]
 pub struct GroupDefaults {
-    priority: i32,
-    max_byte_size: Option<i32>
+    priority: u32,
+    max_byte_size: Option<u32>
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -33,7 +31,7 @@ pub enum Reply {
 }
 
 pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
-    let store = match fmt_result!(data.store.try_lock()) {
+    let store = match data.store.try_lock() {
         Ok(store) => store,
         Err(_error) => {
             return HttpResponse::InternalServerError().finish();
