@@ -169,3 +169,6 @@ Response:
 
 
 On the other hand if there is a max byte size limit set, the first message to be pruned would msg 1, because it is in the lowest priority group and also the oldest message in that group. The second message pruned would be msg 3.
+
+# API Documentation
+The api documenation is in the OpenAPI 3.0 format and can be found in [/postman/schemas](/postman/schemas)
