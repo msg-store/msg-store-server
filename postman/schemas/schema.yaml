@@ -2,201 +2,9 @@ openapi: 3.0.0
 info:
   version: '0.1.0'
   title: 'msg-store'
-# servers:
-#   - url: 'localhost:8080'
+servers:
+  - url: 'localhost:8080'
 paths:
-  /api/export:
-    get:
-      summary: 'Exports messages to a file, while removing the messages from the store'
-      parameters:
-        - name: output
-          in: query
-          description: "The file path to the export file"
-          required: true
-          schema:
-            type: string
-        - name: priority
-          description: An optional priority group to export
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 4294967295
-        - name: rangeStart
-          description: A range of groups to export starting with this index
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 4294967295
-        - name: rangeEnd
-          description: A range of groups to export ending with this index
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 4294967295
-      responses:
-        '200':
-          description: "Success response: Designated messages have been exported"
-        '400':
-          description: "Bad request: Missing or invalid parameter"
-          content:
-            text/plain:
-              schema:
-                type: string
-        '500':
-          description: "Error response"
-
-  /api/group:
-    summary: "Perform priority group level operations"
-    get:
-      summary: 'Get group level metadata for one or more groups'
-      parameters:
-        - name: priority
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 4294967295
-        - name: includeMsgData
-          in: query
-          required: false
-          schema:
-            type: boolean
-            default: false
-      responses:
-        '200':
-          description: "Success response: Returns metadata about groups"
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/GroupGetOkOne'
-                  - type: array
-                    items:
-                      $ref: "#/components/schemas/GroupGetOkOne"                    
-        '400':
-          description: 'Missing or invalid paramater'
-        '500':
-          description: 'Internal server error'
-          content:
-            text/plain:
-              schema:
-                type: string
-    delete:
-      summary: "Remove a group and it's messages from the store"
-      parameters:
-        - name: priority
-          in: query
-          required: true
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 4294967295
-      responses:
-        '200':
-          description: "Success response: The group and it's messaegs were removed"
-        '400':
-          description: "Bad request: Missing parameter"
-        '500':
-          description: "Internal server error"
-
-  /api/group-defaults:
-    post:
-      description: "Insert or update a group's default configuration"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                priority:
-                  type: integer
-                  minimum: 0
-                  maximum: 4294967295
-                maxByteSize:
-                  type: integer
-                  minimum: 0
-                  maximum: 4294967295
-              required:
-                - priority
-                - maxByteSize
-      responses:
-        '200':
-          description: "Success response: The default configuration was inserted/updated"
-        '400':
-          description: "Missing or invalid paramters"
-        '500':
-          description: 'Internal server error'
-          content:
-            text/plain:
-              schema:
-                type: string
-    get:
-      description: "Gets the default configuration of a priority group"
-      parameters:
-        - name: priority
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 4294967295
-      responses:
-        '200':
-          description: "Success response: The group defaults are returned"
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/GroupDefaultsGetOkOne"
-                  - type: array
-                    items:
-                      $ref: "#/components/schemas/GroupDefaultsGetOkOne"
-        '500':
-          description: "Internal server error"
-          content:
-              text/plain:
-                schema:
-                  type: string
-                   
-    delete:
-      description: "Remove default configuration for a priority group"
-      parameters:
-        - name: priority
-          in: query
-          required: true
-          schema:
-            type: integer
-            minimum: 0
-            maximum: 4294967295
-      responses:
-        '200':
-          description: "Success response: The default configuration was removed"
-        '400':
-          description: "Missing or invalid parameters"
-        '500':
-          description: "Internal server error: The default config was not removed"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    minimum: 1
-                    maximum: 3
-                  message:
-                    type: string
-                required:
-                  - code
-                  - message
-    
   /api/msg:
     post:
       description: "Add a message the store"
@@ -314,7 +122,149 @@ paths:
             text/plain:
               schema:
                 type: string
-  
+  /api/group:
+    summary: "Perform priority group level operations"
+    get:
+      summary: 'Get group level metadata for one or more groups'
+      parameters:
+        - name: priority
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 4294967295
+        - name: includeMsgData
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: "Success response: Returns metadata about groups"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GroupGetOkOne'
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/GroupGetOkOne"                    
+        '400':
+          description: 'Missing or invalid paramater'
+        '500':
+          description: 'Internal server error'
+          content:
+            text/plain:
+              schema:
+                type: string
+    delete:
+      summary: "Remove a group and it's messages from the store"
+      parameters:
+        - name: priority
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 4294967295
+      responses:
+        '200':
+          description: "Success response: The group and it's messaegs were removed"
+        '400':
+          description: "Bad request: Missing parameter"
+        '500':
+          description: "Internal server error"
+  /api/group-defaults:
+    post:
+      description: "Insert or update a group's default configuration"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                priority:
+                  type: integer
+                  minimum: 0
+                  maximum: 4294967295
+                maxByteSize:
+                  type: integer
+                  minimum: 0
+                  maximum: 4294967295
+              required:
+                - priority
+                - maxByteSize
+      responses:
+        '200':
+          description: "Success response: The default configuration was inserted/updated"
+        '400':
+          description: "Missing or invalid paramters"
+        '500':
+          description: 'Internal server error'
+          content:
+            text/plain:
+              schema:
+                type: string
+    get:
+      description: "Gets the default configuration of a priority group"
+      parameters:
+        - name: priority
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 4294967295
+      responses:
+        '200':
+          description: "Success response: The group defaults are returned"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/GroupDefaultsGetOkOne"
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/GroupDefaultsGetOkOne"
+        '500':
+          description: "Internal server error"
+          content:
+              text/plain:
+                schema:
+                  type: string              
+    delete:
+      description: "Remove default configuration for a priority group"
+      parameters:
+        - name: priority
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 4294967295
+      responses:
+        '200':
+          description: "Success response: The default configuration was removed"
+        '400':
+          description: "Missing or invalid parameters"
+        '500':
+          description: "Internal server error: The default config was not removed"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    minimum: 1
+                    maximum: 3
+                  message:
+                    type: string
+                required:
+                  - code
+                  - message
   /api/stats:
     get:
       description: "Get the store's inserted, deleted, and pruned count statistics"
@@ -441,7 +391,51 @@ paths:
             text/plain:
               schema:
                 type: string
-
+  /api/export:
+    get:
+      summary: 'Exports messages to a file, while removing the messages from the store'
+      parameters:
+        - name: output
+          in: query
+          description: "The file path to the export file"
+          required: true
+          schema:
+            type: string
+        - name: priority
+          description: An optional priority group to export
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 4294967295
+        - name: rangeStart
+          description: A range of groups to export starting with this index
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 4294967295
+        - name: rangeEnd
+          description: A range of groups to export ending with this index
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 4294967295
+      responses:
+        '200':
+          description: "Success response: Designated messages have been exported"
+        '400':
+          description: "Bad request: Missing or invalid parameter"
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: "Error response"
 components:
   schemas:
     GroupGetOkOne:
