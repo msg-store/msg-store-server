@@ -16,57 +16,53 @@ paths:
           schema:
             type: string
         - name: priority
+          description: An optional priority group to export
           in: query
           required: false
           schema:
             type: integer
-            format: int32
+            minimum: 0
+            maximum: 4294967295
         - name: rangeStart
+          description: A range of groups to export starting with this index
           in: query
           required: false
           schema:
             type: integer
-            format: int32
+            minimum: 0
+            maximum: 4294967295
         - name: rangeEnd
+          description: A range of groups to export ending with this index
           in: query
           required: false
           schema:
             type: integer
-            format: int32
+            minimum: 0
+            maximum: 4294967295
       responses:
         '200':
-          description: "Success response"
+          description: "Success response: Designated messages have been exported"
         '400':
           description: "Bad request: Missing or invalid parameter"
+          content:
+            text/plain:
+              schema:
+                type: string
         '500':
           description: "Error response"
 
   /api/group:
-    delete:
-      summary: "Remove a group and it's messages from the store"
-      parameters:
-        - name: priority
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: "Success response"
-        '400':
-          description: "Bad request: Missing parameter"
-        '500':
-          description: "Internal server error"
+    summary: "Perform priority group level operations"
     get:
-      summary: 'Get group level metadata'
+      summary: 'Get group level metadata for one or more groups'
       parameters:
         - name: priority
           in: query
           required: false
           schema:
             type: integer
-            format: int32
+            minimum: 0
+            maximum: 4294967295
         - name: includeMsgData
           in: query
           required: false
@@ -75,7 +71,7 @@ paths:
             default: false
       responses:
         '200':
-          description: "Returns metadata about groups"
+          description: "Success response: Returns metadata about groups"
           content:
             application/json:
               schema:
@@ -99,59 +95,29 @@ paths:
             text/plain:
               schema:
                 type: string
-
-  /api/group-defaults:
     delete:
-      description: "Remove default configuration for a priority group"
+      summary: "Remove a group and it's messages from the store"
       parameters:
         - name: priority
           in: query
           required: true
           schema:
             type: integer
-            format: int32
+            minimum: 0
+            maximum: 4294967295
       responses:
         '200':
-          description: "The default configuration was removed"
+          description: "Success response: The group and it's messaegs were removed"
         '400':
-          description: "Missing or invalid paramater"
+          description: "Bad request: Missing parameter"
+          content:
+              text/plain:
+                schema:
+                  type: string
         '500':
-          description: "Internal server error: The default config was not removed"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                    minimum: 1
-                    maximum: 3
-                  message:
-                    type: string
-                required:
-                  - code
-                  - message
-    get:
-      description: "Gets the default configuration of a priority group"
-      parameters:
-        - name: priority
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: "The group defaults are returned"
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/GroupDefaultsGetOkOne"
-                  - type: array
-                    items:
-                      $ref: "#/components/schemas/GroupDefaultsGetOkOne"           
+          description: "Internal server error"
+
+  /api/group-defaults:
     post:
       description: "Insert or update a group's default configuration"
       requestBody:
@@ -162,16 +128,18 @@ paths:
               properties:
                 priority:
                   type: integer
-                  format: int32
+                  minimum: 0
+                  maximum: 4294967295
                 maxByteSize:
                   type: integer
-                  format: int32
+                  minimum: 0
+                  maximum: 4294967295
               required:
                 - priority
                 - maxByteSize
       responses:
         '200':
-          description: "The default was inserted/updated"
+          description: "Success response: The default configuration was inserted/updated"
         '400':
           description: "Missing or invalid paramters"
           content:
@@ -184,25 +152,118 @@ paths:
             text/plain:
               schema:
                 type: string
-
-  /api/msg:
-    delete:
-      description: "Removes a message from the store"
+    get:
+      description: "Gets the default configuration of a priority group"
       parameters:
-        - name: uuid
+        - name: priority
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 4294967295
+      responses:
+        '200':
+          description: "Success response: The group defaults are returned"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/GroupDefaultsGetOkOne"
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/GroupDefaultsGetOkOne"
+        '400':
+          description: "Missing or invalid parameters"
+          content:
+              text/plain:
+                schema:
+                  type: string
+                   
+    delete:
+      description: "Remove default configuration for a priority group"
+      parameters:
+        - name: priority
           in: query
           required: true
           schema:
-            type: string
+            type: integer
+            minimum: 0
+            maximum: 4294967295
       responses:
         '200':
-          description: 'Success response'
+          description: "Success response: The default configuration was removed"
         '400':
-          description: 'Missing or invalid uuid'
+          description: "Missing or invalid parameters"
           content:
-            text/plain:
+              text/plain:
+                schema:
+                  type: string
+        '500':
+          description: "Internal server error: The default config was not removed"
+          content:
+            application/json:
               schema:
-                type: string
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    minimum: 1
+                    maximum: 3
+                  message:
+                    type: string
+                required:
+                  - code
+                  - message
+    
+  /api/msg:
+    post:
+      description: "Add a message the store"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                priority:
+                  type: integer
+                  minimum: 0
+                  maximum: 4294967295
+                msg:
+                  type: string
+              required:
+                - priority
+                - msg
+      responses:
+        '200':
+          description: 'Success response: The message was added to the store'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    type: string
+                required:
+                  - uuid
+        '400':
+          description: 'Missing or invalid parameters'
+        '409':
+          description: 'No error was encountered, but the store rejected the message'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    minimum: 0
+                    maximum: 3
+                  message:
+                    type: string
+                required:
+                  - code
+                  - message
         '500':
           description: 'Internal server error'
           content:
@@ -222,7 +283,8 @@ paths:
           required: false
           schema:
             type: integer
-            format: int32
+            minimum: 0
+            maximum: 4294967295
         - name: reverse
           in: query
           required: false
@@ -230,7 +292,7 @@ paths:
             type: boolean
       responses:
         '200':
-          description: 'Success response'
+          description: 'Success response: A message was returned if found'
           content:
             appplication/json:
               schema:
@@ -255,55 +317,23 @@ paths:
             text/plain:
               schema:
                 type: string
-    post:
-      description: "Add a message the store"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                priority:
-                  type: integer
-                  format: int32
-                msg:
-                  type: string
-              required:
-                - priority
-                - msg
+    delete:
+      description: "Removes a message from the store"
+      parameters:
+        - name: uuid
+          in: query
+          required: true
+          schema:
+            type: string
       responses:
         '200':
-          description: 'Success response'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  uuid:
-                    type: string
-                required:
-                  - uuid
+          description: 'Success response: The message was removed if present'
         '400':
-          description: 'Missing or invalid parameters'
+          description: 'Missing or invalid uuid'
           content:
             text/plain:
               schema:
                 type: string
-        '409':
-          description: 'No error was encountered, but the store rejected the message'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                  message:
-                    type: string
-                required:
-                  - code
-                  - message
         '500':
           description: 'Internal server error'
           content:
@@ -312,36 +342,11 @@ paths:
                 type: string
   
   /api/stats:
-    delete:
-      description: "Reset the store's inserted, deleted, and pruned count statistics"
-      responses:
-        '200':
-          description: "The store's statistics were reset"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  inserted:
-                    type: integer
-                    format: int32
-                  deleted:
-                    type: integer
-                    format: int32
-                  pruned:
-                    type: integer
-                    format: int32
-                required:
-                  - inserted
-                  - deleted
-                  - pruned
-        '500':
-          description: 'Internal server error: The stats were not reset.'
     get:
       description: "Get the store's inserted, deleted, and pruned count statistics"
       responses:
         '200':
-          description: "The store's statistics are returned"
+          description: "Success response: The store's statistics are returned"
           content:
             application/json:
               schema:
@@ -352,13 +357,22 @@ paths:
                     properties:
                       inserted:
                         type: integer
-                        format: int32
+                        minimum: 0
+                        maximum: 4294967295
                       deleted:
                         type: integer
-                        format: int32
+                        minimum: 0
+                        maximum: 4294967295
                       pruned:
                         type: integer
-                        format: int32
+                        minimum: 0
+                        maximum: 4294967295
+        '500':
+          description: "Internal server error"
+          content:
+            text/plain:
+              schema:
+                type: string
     put:
       description: "Update the store's statistics"
       requestBody:
@@ -373,13 +387,16 @@ paths:
                       properties:
                         inserted:
                           type: integer
-                          format: int32
+                          minimum: 0
+                          maximum: 4294967295
                         deleted:
                           type: integer
-                          format: int32
+                          minimum: 0
+                          maximum: 4294967295
                         pruned:
                           type: integer
-                          format: int32
+                          minimum: 0
+                          maximum: 4294967295
                 - type: object
                   properties:
                     add:
@@ -387,20 +404,69 @@ paths:
                       properties:
                         inserted:
                           type: integer
-                          format: int32
+                          minimum: 0
+                          maximum: 4294967295
                         deleted:
                           type: integer
-                          format: int32
+                          minimum: 0
+                          maximum: 4294967295
                         pruned:
                           type: integer
-                          format: int32
+                          minimum: 0
+                          maximum: 4294967295
       responses:
         '200':
-          description: "The store's statistics were updated"
+          description: "Success respons: The store's statistics were updated"
         '400':
           description: "Missing or invalid parameters"
+          content:
+            text/plain:
+              schema:
+                type: string
         '500':
           description: 'Internal server error: The stats were not updated'
+          content:
+            text/plain:
+              schema:
+                type: string
+    delete:
+      description: "Reset the store's inserted, deleted, and pruned count statistics"
+      responses:
+        '200':
+          description: "Success response: The store's statistics were reset"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inserted:
+                    type: integer
+                    minimum: 0
+                    maximum: 4294967295
+                  deleted:
+                    type: integer
+                    minimum: 0
+                    maximum: 4294967295
+                  pruned:
+                    type: integer
+                    minimum: 0
+                    maximum: 4294967295
+                required:
+                  - inserted
+                  - deleted
+                  - pruned
+        '400':
+          description: "Missing or invalid parameters"
+          content:
+              text/plain:
+                schema:
+                  type: string
+        '500':
+          description: 'Internal server error: The stats were not reset.'
+          content:
+            text/plain:
+              schema:
+                type: string
 
 components:
   schemas:
@@ -409,16 +475,20 @@ components:
       properties:
         priority:
           type: integer
-          format: int32
+          minimum: 0
+          maximum: 4294967295
         byteSize:
           type: integer
-          format: int32
+          minimum: 0
+          maximum: 4294967295
         maxByteSize:
           type: integer
-          format: int32
+          minimum: 0
+          maximum: 4294967295
         msgCount:
           type:  integer
-          format: int32
+          minimum: 0
+          maximum: 4294967295
         messages:
           type: array
           items:
@@ -428,21 +498,23 @@ components:
                 type: string
               byteSize:
                 type: integer
-                format: int32
+                minimum: 0
+                maximum: 4294967295
       required:
         - priority
         - byteSize
         - msgCount
         - messages
-
     GroupDefaultsGetOkOne:
       type: object
       properties:
         priority:
           type: integer
-          format: int32
+          minimum: 0
+          maximum: 4294967295
         maxByteSize:
           type: integer
-          format: int32
+          minimum: 0
+          maximum: 4294967295
       required:
         - priority
