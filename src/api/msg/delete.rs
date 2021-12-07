@@ -24,7 +24,13 @@ pub fn delete(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
             return HttpResponse::InternalServerError().finish();
         }
     };
-    if let Err(_error) = store.del(&Uuid::from_string(&info.uuid)) {
+    let uuid = match Uuid::from_string(&info.uuid) {
+        Ok(uuid) => uuid,
+        Err(_error) => {
+            return HttpResponse::BadRequest().content_type("text/plain").body("Query deserialize error: Invalid UUID");
+        }
+    };
+    if let Err(_error) = store.del(&uuid) {
         HttpResponse::InternalServerError().finish()
     } else {
         HttpResponse::Ok().finish()

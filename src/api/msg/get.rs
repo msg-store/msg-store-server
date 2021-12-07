@@ -43,7 +43,12 @@ pub fn get(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
     };
     let mut options = GetOptions::default();
     if let Some(uuid_string) = info.uuid.clone() {
-        let uuid = Uuid::from_string(&uuid_string);
+        let uuid = match Uuid::from_string(&uuid_string) {
+            Ok(uuid) => uuid,
+            Err(_error) => {
+                return HttpResponse::BadRequest().content_type("text/plain").body("Query deserialize error: Invalid UUID");
+            }
+        };
         options.uuid = Some(uuid);
     }
     if let Some(priority) = info.priority {

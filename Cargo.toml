@@ -13,8 +13,8 @@ actix-web-actors = "3"
 cfg-if = "1.0.0"
 clap = "2.33.3"
 dirs = "1.0.4"
-msg-store = "0.7.0"
-msg-store-plugin-leveldb = { version = "0.5.0", optional = true }
+msg-store = "0.7.1"
+msg-store-plugin-leveldb = { version = "0.5.1", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
