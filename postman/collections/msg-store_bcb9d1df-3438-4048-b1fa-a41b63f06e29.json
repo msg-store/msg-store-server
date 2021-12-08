@@ -49,7 +49,7 @@
                                         "method": "GET",
                                         "header": [],
                                         "url": {
-                                            "raw": "{{baseUrl}}/api/group?priority=3201425616&includeMsgData=false",
+                                            "raw": "{{baseUrl}}/api/group?priority=1&includeMsgData=true",
                                             "host": [
                                                 "{{baseUrl}}"
                                             ],
@@ -60,11 +60,11 @@
                                             "query": [
                                                 {
                                                     "key": "priority",
-                                                    "value": "3201425616"
+                                                    "value": "1"
                                                 },
                                                 {
                                                     "key": "includeMsgData",
-                                                    "value": "false"
+                                                    "value": "true"
                                                 }
                                             ]
                                         }
@@ -80,7 +80,7 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "{\n \"priority\": 1370209665,\n \"byteSize\": 2914014336,\n \"msgCount\": 3604147338,\n \"messages\": [\n  {\n   \"uuid\": \"sint ullamco commodo\",\n   \"byteSize\": 418592973\n  },\n  {\n   \"uuid\": \"aute elit pariatur magna ut\",\n   \"byteSize\": 909383536\n  }\n ],\n \"maxByteSize\": 2905169659\n}"
+                                    "body": "{\n  \"priority\": 1,\n  \"byteSize\": 36,\n  \"maxByteSize\": 706909862,\n  \"msgCount\": 3,\n  \"messages\": [\n    {\n      \"uuid\": \"1638922038109204154-1\",\n      \"byteSize\": 13\n    },\n    {\n      \"uuid\": \"1638922046666369145-1\",\n      \"byteSize\": 10\n    },\n    {\n      \"uuid\": \"1638922055611673322-1\",\n      \"byteSize\": 13\n    }\n  ]\n}"
                                 },
                                 {
                                     "id": "8ebcb7a6-2a11-4f60-b4e5-afce21dfe055",
@@ -89,7 +89,7 @@
                                         "method": "GET",
                                         "header": [],
                                         "url": {
-                                            "raw": "{{baseUrl}}/api/group?priority=3201425616&includeMsgData=false",
+                                            "raw": "{{baseUrl}}/api/group?priority=-1",
                                             "host": [
                                                 "{{baseUrl}}"
                                             ],
@@ -100,11 +100,12 @@
                                             "query": [
                                                 {
                                                     "key": "priority",
-                                                    "value": "3201425616"
+                                                    "value": "-1"
                                                 },
                                                 {
                                                     "key": "includeMsgData",
-                                                    "value": "false"
+                                                    "value": "false",
+                                                    "disabled": true
                                                 }
                                             ]
                                         }
@@ -120,7 +121,7 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": ""
+                                    "body": "Query deserialize error: invalid digit found in string"
                                 },
                                 {
                                     "id": "74523527-484e-42c1-96df-a1bdf12271d3",
@@ -129,7 +130,7 @@
                                         "method": "GET",
                                         "header": [],
                                         "url": {
-                                            "raw": "{{baseUrl}}/api/group?priority=3201425616&includeMsgData=false",
+                                            "raw": "{{baseUrl}}/api/group?priority=1&includeMsgData=false",
                                             "host": [
                                                 "{{baseUrl}}"
                                             ],
@@ -140,7 +141,7 @@
                                             "query": [
                                                 {
                                                     "key": "priority",
-                                                    "value": "3201425616"
+                                                    "value": "1"
                                                 },
                                                 {
                                                     "key": "includeMsgData",
@@ -160,7 +161,7 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "esse do dolore officia pariatur"
+                                    "body": "Internal Server Error"
                                 }
                             ]
                         },
@@ -1759,7 +1760,7 @@
     ],
     "variable": [
         {
-            "id": "a202ecde-944b-447a-91ff-b2530b412707",
+            "id": "c1ef7ea5-a313-4d4b-8aec-83aba0770598",
             "key": "baseUrl",
             "value": "localhost:8080"
         }
