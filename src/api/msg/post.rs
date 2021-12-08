@@ -34,6 +34,9 @@ impl Reply {
     pub fn lacks_priority() -> Reply {
         Reply::Err{ code: 3, message: "The store has reached max capcity and could not accept message".to_string() }
     }
+    pub fn internal_server_error() -> Reply {
+        Reply::Err { code: 4, message: "Internal Server Error".to_string() }
+    }
 }
 
 pub fn post(data: Data<AppData>, body: Json<Body>) -> HttpResponse {
@@ -50,7 +53,7 @@ pub fn post(data: Data<AppData>, body: Json<Body>) -> HttpResponse {
                 Error::ExceedesStoreMax => { return HttpResponse::Conflict().json(Reply::exceeds_store_max()); },
                 Error::ExceedesGroupMax => { return HttpResponse::Conflict().json(Reply::exceeds_group_max()); },
                 Error::LacksPriority => { return HttpResponse::Conflict().json(Reply::lacks_priority()); },
-                _ => { return HttpResponse::InternalServerError().finish(); }
+                _ => { return HttpResponse::InternalServerError().json(Reply::internal_server_error()); }
             }            
         }
     };
