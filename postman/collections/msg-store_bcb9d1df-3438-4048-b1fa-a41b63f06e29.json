@@ -1556,11 +1556,39 @@
                 {
                     "name": "Exports messages to a file, while removing the messages from the store",
                     "id": "20bb9ac5-9382-4e43-a55f-9e31ac9d5f34",
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    },
                     "request": {
                         "method": "GET",
                         "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "output",
+                                    "value": "/tmp/msg-store-export.txt",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "priority",
+                                    "value": "1",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "rangeStart",
+                                    "value": "1",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "rangeEnd",
+                                    "value": "10",
+                                    "type": "text"
+                                }
+                            ]
+                        },
                         "url": {
-                            "raw": "{{baseUrl}}/api/export?output=esse do dolore officia pariatur&priority=3201425616&rangeStart=3201425616&rangeEnd=3201425616",
+                            "raw": "{{baseUrl}}/api/export?output=/tmp/msg-store-export.txt&priority=1&rangeStart=1&rangeEnd=10",
                             "host": [
                                 "{{baseUrl}}"
                             ],
@@ -1571,22 +1599,22 @@
                             "query": [
                                 {
                                     "key": "output",
-                                    "value": "esse do dolore officia pariatur",
+                                    "value": "/tmp/msg-store-export.txt",
                                     "description": "(Required) The file path to the export file"
                                 },
                                 {
                                     "key": "priority",
-                                    "value": "3201425616",
+                                    "value": "1",
                                     "description": "An optional priority group to export"
                                 },
                                 {
                                     "key": "rangeStart",
-                                    "value": "3201425616",
+                                    "value": "1",
                                     "description": "A range of groups to export starting with this index"
                                 },
                                 {
                                     "key": "rangeEnd",
-                                    "value": "3201425616",
+                                    "value": "10",
                                     "description": "A range of groups to export ending with this index"
                                 }
                             ]
@@ -1600,7 +1628,7 @@
                                 "method": "GET",
                                 "header": [],
                                 "url": {
-                                    "raw": "{{baseUrl}}/api/export?output=esse do dolore officia pariatur&priority=3201425616&rangeStart=3201425616&rangeEnd=3201425616",
+                                    "raw": "{{baseUrl}}/api/export?output=/path/to/output.txt",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -1611,19 +1639,22 @@
                                     "query": [
                                         {
                                             "key": "output",
-                                            "value": "esse do dolore officia pariatur"
+                                            "value": "/path/to/output.txt"
                                         },
                                         {
                                             "key": "priority",
-                                            "value": "3201425616"
+                                            "value": "1",
+                                            "disabled": true
                                         },
                                         {
                                             "key": "rangeStart",
-                                            "value": "3201425616"
+                                            "value": "1",
+                                            "disabled": true
                                         },
                                         {
                                             "key": "rangeEnd",
-                                            "value": "3201425616"
+                                            "value": "10",
+                                            "disabled": true
                                         }
                                     ]
                                 }
@@ -1648,7 +1679,7 @@
                                 "method": "GET",
                                 "header": [],
                                 "url": {
-                                    "raw": "{{baseUrl}}/api/export?output=esse do dolore officia pariatur&priority=3201425616&rangeStart=3201425616&rangeEnd=3201425616",
+                                    "raw": "{{baseUrl}}/api/export?output=/path/to/output.txt&priority=-1",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -1659,19 +1690,21 @@
                                     "query": [
                                         {
                                             "key": "output",
-                                            "value": "esse do dolore officia pariatur"
+                                            "value": "/path/to/output.txt"
                                         },
                                         {
                                             "key": "priority",
-                                            "value": "3201425616"
+                                            "value": "-1"
                                         },
                                         {
                                             "key": "rangeStart",
-                                            "value": "3201425616"
+                                            "value": "1",
+                                            "disabled": true
                                         },
                                         {
                                             "key": "rangeEnd",
-                                            "value": "3201425616"
+                                            "value": "10",
+                                            "disabled": true
                                         }
                                     ]
                                 }
@@ -1687,7 +1720,7 @@
                             ],
                             "cookie": [],
                             "responseTime": null,
-                            "body": "esse do dolore officia pariatur"
+                            "body": "Query deserialize error: invalid digit found in string"
                         },
                         {
                             "id": "c9a243a1-8618-4349-8ec1-b361fdd756be",
@@ -1696,7 +1729,7 @@
                                 "method": "GET",
                                 "header": [],
                                 "url": {
-                                    "raw": "{{baseUrl}}/api/export?output=esse do dolore officia pariatur&priority=3201425616&rangeStart=3201425616&rangeEnd=3201425616",
+                                    "raw": "{{baseUrl}}/api/export?output=/path/to/output.txt",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -1707,19 +1740,22 @@
                                     "query": [
                                         {
                                             "key": "output",
-                                            "value": "esse do dolore officia pariatur"
+                                            "value": "/path/to/output.txt"
                                         },
                                         {
                                             "key": "priority",
-                                            "value": "3201425616"
+                                            "value": "1",
+                                            "disabled": true
                                         },
                                         {
                                             "key": "rangeStart",
-                                            "value": "3201425616"
+                                            "value": "1",
+                                            "disabled": true
                                         },
                                         {
                                             "key": "rangeEnd",
-                                            "value": "3201425616"
+                                            "value": "10",
+                                            "disabled": true
                                         }
                                     ]
                                 }
@@ -1735,7 +1771,7 @@
                             ],
                             "cookie": [],
                             "responseTime": null,
-                            "body": ""
+                            "body": "Internal Server Error"
                         }
                     ]
                 }
@@ -1767,7 +1803,7 @@
     ],
     "variable": [
         {
-            "id": "07b7f698-7c47-46b3-a0de-5cfbb0873745",
+            "id": "f05d68ed-2de4-4562-a37b-88ec714cde4e",
             "key": "baseUrl",
             "value": "localhost:8080"
         }
