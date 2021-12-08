@@ -714,6 +714,9 @@
                         {
                             "name": "/api/msg",
                             "id": "9b4f9434-19d3-4b2b-9bb5-a5cf8ebef695",
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            },
                             "request": {
                                 "method": "POST",
                                 "header": [
@@ -724,7 +727,7 @@
                                 ],
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"priority\": 4069030451,\n    \"msg\": \"eiusmod Lorem\"\n}",
+                                    "raw": "{\n    \"priority\": 1,\n    \"msg\": \"eiusmod Lorem\"\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -752,7 +755,7 @@
                                         "header": [],
                                         "body": {
                                             "mode": "raw",
-                                            "raw": "{\n    \"priority\": 4069030451,\n    \"msg\": \"eiusmod Lorem\"\n}",
+                                            "raw": "{\n    \"priority\": 1,\n    \"msg\": \"eiusmod Lorem\"\n}",
                                             "options": {
                                                 "raw": {
                                                     "language": "json"
@@ -781,7 +784,7 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "{\n \"uuid\": \"velit pariatur\"\n}"
+                                    "body": "{\n  \"uuid\": \"1638924622010764617-1\"\n}"
                                 },
                                 {
                                     "id": "d9d96e10-f191-444c-a92f-118ed8ac3595",
@@ -791,7 +794,7 @@
                                         "header": [],
                                         "body": {
                                             "mode": "raw",
-                                            "raw": "{\n    \"priority\": 4069030451,\n    \"msg\": \"eiusmod Lorem\"\n}",
+                                            "raw": "{\n    \"priority\": -1,\n    \"msg\": \"eiusmod Lorem\"\n}",
                                             "options": {
                                                 "raw": {
                                                     "language": "json"
@@ -824,13 +827,13 @@
                                 },
                                 {
                                     "id": "ff721364-acf1-492c-9fdf-9fd294d3f404",
-                                    "name": "No error was encountered, but the store rejected the message",
+                                    "name": "Rejected message",
                                     "originalRequest": {
                                         "method": "POST",
                                         "header": [],
                                         "body": {
                                             "mode": "raw",
-                                            "raw": "{\n    \"priority\": 4069030451,\n    \"msg\": \"eiusmod Lorem\"\n}",
+                                            "raw": "{\n    \"priority\": 1,\n    \"msg\": \"eiusmod Lorem\"\n}",
                                             "options": {
                                                 "raw": {
                                                     "language": "json"
@@ -859,7 +862,7 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "{\n \"code\": 1,\n \"message\": \"est proident adipisicing\"\n}"
+                                    "body": "{\n \"code\": 1,\n \"message\": \"Message byte size exceeds the max byte size limit allowed by the store\"\n}"
                                 },
                                 {
                                     "id": "826600ca-536e-4c07-b32f-0d8386978a96",
@@ -869,7 +872,7 @@
                                         "header": [],
                                         "body": {
                                             "mode": "raw",
-                                            "raw": "{\n    \"priority\": 4069030451,\n    \"msg\": \"eiusmod Lorem\"\n}",
+                                            "raw": "{\n    \"priority\": 1,\n    \"msg\": \"eiusmod Lorem\"\n}",
                                             "options": {
                                                 "raw": {
                                                     "language": "json"
@@ -889,7 +892,7 @@
                                     },
                                     "status": "Internal Server Error",
                                     "code": 500,
-                                    "_postman_previewlanguage": "text",
+                                    "_postman_previewlanguage": "json",
                                     "header": [
                                         {
                                             "key": "Content-Type",
@@ -898,18 +901,21 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "esse do dolore officia pariatur"
+                                    "body": "{\n  \"code\": 4,\n  \"message\": \"Internal Server Error\"\n}"
                                 }
                             ]
                         },
                         {
                             "name": "/api/msg",
                             "id": "6c2afefd-7fdb-4b3e-af43-44d3d28e25fd",
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            },
                             "request": {
                                 "method": "GET",
                                 "header": [],
                                 "url": {
-                                    "raw": "{{baseUrl}}/api/msg?uuid=esse do dolore officia pariatur&priority=3201425616&reverse=true",
+                                    "raw": "{{baseUrl}}/api/msg",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -920,15 +926,18 @@
                                     "query": [
                                         {
                                             "key": "uuid",
-                                            "value": "esse do dolore officia pariatur"
+                                            "value": "1638924622010764617-1",
+                                            "disabled": true
                                         },
                                         {
                                             "key": "priority",
-                                            "value": "3201425616"
+                                            "value": "1",
+                                            "disabled": true
                                         },
                                         {
                                             "key": "reverse",
-                                            "value": "true"
+                                            "value": "false",
+                                            "disabled": true
                                         }
                                     ]
                                 },
@@ -942,7 +951,7 @@
                                         "method": "GET",
                                         "header": [],
                                         "url": {
-                                            "raw": "{{baseUrl}}/api/msg?uuid=esse do dolore officia pariatur&priority=3201425616&reverse=true",
+                                            "raw": "{{baseUrl}}/api/msg",
                                             "host": [
                                                 "{{baseUrl}}"
                                             ],
@@ -953,22 +962,25 @@
                                             "query": [
                                                 {
                                                     "key": "uuid",
-                                                    "value": "esse do dolore officia pariatur"
+                                                    "value": "1638924622010764617-1",
+                                                    "disabled": true
                                                 },
                                                 {
                                                     "key": "priority",
-                                                    "value": "3201425616"
+                                                    "value": "1",
+                                                    "disabled": true
                                                 },
                                                 {
                                                     "key": "reverse",
-                                                    "value": "true"
+                                                    "value": "false",
+                                                    "disabled": true
                                                 }
                                             ]
                                         }
                                     },
                                     "status": "OK",
                                     "code": 200,
-                                    "_postman_previewlanguage": "text",
+                                    "_postman_previewlanguage": "json",
                                     "header": [
                                         {
                                             "key": "Content-Type",
@@ -977,7 +989,7 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": ""
+                                    "body": "{\n  \"uuid\": \"1638922038109204154-1\",\n  \"msg\": \"eiusmod Lorem\"\n}"
                                 },
                                 {
                                     "id": "ebbdc335-6577-4bd7-96b6-89e73410472c",
@@ -986,7 +998,7 @@
                                         "method": "GET",
                                         "header": [],
                                         "url": {
-                                            "raw": "{{baseUrl}}/api/msg?uuid=esse do dolore officia pariatur&priority=3201425616&reverse=true",
+                                            "raw": "{{baseUrl}}/api/msg?priority=-1",
                                             "host": [
                                                 "{{baseUrl}}"
                                             ],
@@ -997,15 +1009,17 @@
                                             "query": [
                                                 {
                                                     "key": "uuid",
-                                                    "value": "esse do dolore officia pariatur"
+                                                    "value": "1638924622010764617-1",
+                                                    "disabled": true
                                                 },
                                                 {
                                                     "key": "priority",
-                                                    "value": "3201425616"
+                                                    "value": "-1"
                                                 },
                                                 {
                                                     "key": "reverse",
-                                                    "value": "true"
+                                                    "value": "false",
+                                                    "disabled": true
                                                 }
                                             ]
                                         }
@@ -1030,7 +1044,7 @@
                                         "method": "GET",
                                         "header": [],
                                         "url": {
-                                            "raw": "{{baseUrl}}/api/msg?uuid=esse do dolore officia pariatur&priority=3201425616&reverse=true",
+                                            "raw": "{{baseUrl}}/api/msg?uuid=1638924622010764617-1&priority=1",
                                             "host": [
                                                 "{{baseUrl}}"
                                             ],
@@ -1041,15 +1055,16 @@
                                             "query": [
                                                 {
                                                     "key": "uuid",
-                                                    "value": "esse do dolore officia pariatur"
+                                                    "value": "1638924622010764617-1"
                                                 },
                                                 {
                                                     "key": "priority",
-                                                    "value": "3201425616"
+                                                    "value": "1"
                                                 },
                                                 {
                                                     "key": "reverse",
-                                                    "value": "true"
+                                                    "value": "false",
+                                                    "disabled": true
                                                 }
                                             ]
                                         }
@@ -1065,18 +1080,21 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "esse do dolore officia pariatur"
+                                    "body": "Internal Server Error"
                                 }
                             ]
                         },
                         {
                             "name": "/api/msg",
                             "id": "fb402b63-dd8a-4289-ba09-ff693184d4d5",
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            },
                             "request": {
                                 "method": "DELETE",
                                 "header": [],
                                 "url": {
-                                    "raw": "{{baseUrl}}/api/msg?uuid=esse do dolore officia pariatur",
+                                    "raw": "{{baseUrl}}/api/msg?uuid=1638924622010764617-1",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -1087,7 +1105,7 @@
                                     "query": [
                                         {
                                             "key": "uuid",
-                                            "value": "esse do dolore officia pariatur",
+                                            "value": "1638924622010764617-1",
                                             "description": "(Required) "
                                         }
                                     ]
@@ -1102,7 +1120,7 @@
                                         "method": "DELETE",
                                         "header": [],
                                         "url": {
-                                            "raw": "{{baseUrl}}/api/msg?uuid=esse do dolore officia pariatur",
+                                            "raw": "{{baseUrl}}/api/msg?uuid=1638924622010764617-1",
                                             "host": [
                                                 "{{baseUrl}}"
                                             ],
@@ -1113,7 +1131,7 @@
                                             "query": [
                                                 {
                                                     "key": "uuid",
-                                                    "value": "esse do dolore officia pariatur"
+                                                    "value": "1638924622010764617-1"
                                                 }
                                             ]
                                         }
@@ -1138,7 +1156,7 @@
                                         "method": "DELETE",
                                         "header": [],
                                         "url": {
-                                            "raw": "{{baseUrl}}/api/msg?uuid=esse do dolore officia pariatur",
+                                            "raw": "{{baseUrl}}/api/msg",
                                             "host": [
                                                 "{{baseUrl}}"
                                             ],
@@ -1149,7 +1167,8 @@
                                             "query": [
                                                 {
                                                     "key": "uuid",
-                                                    "value": "esse do dolore officia pariatur"
+                                                    "value": "1638924622010764617-1",
+                                                    "disabled": true
                                                 }
                                             ]
                                         }
@@ -1165,7 +1184,7 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "esse do dolore officia pariatur"
+                                    "body": "Query deserialize error: invalid digit found in string"
                                 },
                                 {
                                     "id": "3bdd776a-18b6-4251-aeea-b74a24b44d9e",
@@ -1174,7 +1193,7 @@
                                         "method": "DELETE",
                                         "header": [],
                                         "url": {
-                                            "raw": "{{baseUrl}}/api/msg?uuid=esse do dolore officia pariatur",
+                                            "raw": "{{baseUrl}}/api/msg?uuid=1638924622010764617-1",
                                             "host": [
                                                 "{{baseUrl}}"
                                             ],
@@ -1185,7 +1204,7 @@
                                             "query": [
                                                 {
                                                     "key": "uuid",
-                                                    "value": "esse do dolore officia pariatur"
+                                                    "value": "1638924622010764617-1"
                                                 }
                                             ]
                                         }
@@ -1201,7 +1220,7 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "esse do dolore officia pariatur"
+                                    "body": "Internal Server Error"
                                 }
                             ]
                         }
@@ -1772,7 +1791,7 @@
     ],
     "variable": [
         {
-            "id": "5d8acd5d-3d26-43fb-8161-0be824da81b0",
+            "id": "8d8627c3-e2f4-46c7-876e-9bae14d1c7ac",
             "key": "baseUrl",
             "value": "localhost:8080"
         }
