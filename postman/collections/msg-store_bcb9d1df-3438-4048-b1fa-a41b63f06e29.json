@@ -312,6 +312,9 @@
                         {
                             "name": "/api/group-defaults",
                             "id": "54270322-923f-4ca7-bbdb-9e7e20f8055d",
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            },
                             "request": {
                                 "method": "POST",
                                 "header": [
@@ -322,7 +325,7 @@
                                 ],
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"priority\": 3536891176,\n    \"maxByteSize\": 706909862\n}",
+                                    "raw": "{\n    \"priority\": 1,\n    \"maxByteSize\": 706909862\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -350,7 +353,7 @@
                                         "header": [],
                                         "body": {
                                             "mode": "raw",
-                                            "raw": "{\n    \"priority\": 3536891176,\n    \"maxByteSize\": 706909862\n}",
+                                            "raw": "{\n    \"priority\": 1,\n    \"maxByteSize\": 706909862\n}",
                                             "options": {
                                                 "raw": {
                                                     "language": "json"
@@ -389,7 +392,7 @@
                                         "header": [],
                                         "body": {
                                             "mode": "raw",
-                                            "raw": "{\n    \"priority\": 3536891176,\n    \"maxByteSize\": 706909862\n}",
+                                            "raw": "{\n    \"priority\": -1,\n    \"maxByteSize\": 706909862\n}",
                                             "options": {
                                                 "raw": {
                                                     "language": "json"
@@ -428,7 +431,7 @@
                                         "header": [],
                                         "body": {
                                             "mode": "raw",
-                                            "raw": "{\n    \"priority\": 3536891176,\n    \"maxByteSize\": 706909862\n}",
+                                            "raw": "{\n    \"priority\": 1,\n    \"maxByteSize\": 706909862\n}",
                                             "options": {
                                                 "raw": {
                                                     "language": "json"
@@ -457,18 +460,21 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "esse do dolore officia pariatur"
+                                    "body": "Internal Server Error"
                                 }
                             ]
                         },
                         {
                             "name": "/api/group-defaults",
                             "id": "d55ba6c9-2f8b-49f1-a391-7f842c68e4e1",
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            },
                             "request": {
                                 "method": "GET",
                                 "header": [],
                                 "url": {
-                                    "raw": "{{baseUrl}}/api/group-defaults?priority=3201425616",
+                                    "raw": "{{baseUrl}}/api/group-defaults?priority=1",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -479,7 +485,7 @@
                                     "query": [
                                         {
                                             "key": "priority",
-                                            "value": "3201425616"
+                                            "value": "1"
                                         }
                                     ]
                                 },
@@ -493,7 +499,7 @@
                                         "method": "GET",
                                         "header": [],
                                         "url": {
-                                            "raw": "{{baseUrl}}/api/group-defaults?priority=3201425616",
+                                            "raw": "{{baseUrl}}/api/group-defaults?priority=1",
                                             "host": [
                                                 "{{baseUrl}}"
                                             ],
@@ -504,7 +510,7 @@
                                             "query": [
                                                 {
                                                     "key": "priority",
-                                                    "value": "3201425616"
+                                                    "value": "1"
                                                 }
                                             ]
                                         }
@@ -520,7 +526,7 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "{\n \"priority\": 2593486671,\n \"maxByteSize\": 3389364768\n}"
+                                    "body": "{\n \"priority\": 1,\n \"maxByteSize\": 3389364768\n}"
                                 },
                                 {
                                     "id": "112a7e27-9990-448e-92a6-0cbd19f00f69",
@@ -529,7 +535,7 @@
                                         "method": "GET",
                                         "header": [],
                                         "url": {
-                                            "raw": "{{baseUrl}}/api/group-defaults?priority=3201425616",
+                                            "raw": "{{baseUrl}}/api/group-defaults?priority=1",
                                             "host": [
                                                 "{{baseUrl}}"
                                             ],
@@ -540,7 +546,7 @@
                                             "query": [
                                                 {
                                                     "key": "priority",
-                                                    "value": "3201425616"
+                                                    "value": "1"
                                                 }
                                             ]
                                         }
@@ -556,18 +562,21 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "esse do dolore officia pariatur"
+                                    "body": "Internal Server Error"
                                 }
                             ]
                         },
                         {
                             "name": "/api/group-defaults",
                             "id": "77251eda-9c45-4ade-b43c-6f99e3f1b4d3",
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            },
                             "request": {
                                 "method": "DELETE",
                                 "header": [],
                                 "url": {
-                                    "raw": "{{baseUrl}}/api/group-defaults?priority=3201425616",
+                                    "raw": "{{baseUrl}}/api/group-defaults?priority=1",
                                     "host": [
                                         "{{baseUrl}}"
                                     ],
@@ -578,7 +587,7 @@
                                     "query": [
                                         {
                                             "key": "priority",
-                                            "value": "3201425616",
+                                            "value": "1",
                                             "description": "(Required) "
                                         }
                                     ]
@@ -593,7 +602,7 @@
                                         "method": "DELETE",
                                         "header": [],
                                         "url": {
-                                            "raw": "{{baseUrl}}/api/group-defaults?priority=3201425616",
+                                            "raw": "{{baseUrl}}/api/group-defaults?priority=1",
                                             "host": [
                                                 "{{baseUrl}}"
                                             ],
@@ -604,7 +613,7 @@
                                             "query": [
                                                 {
                                                     "key": "priority",
-                                                    "value": "3201425616"
+                                                    "value": "1"
                                                 }
                                             ]
                                         }
@@ -629,7 +638,7 @@
                                         "method": "DELETE",
                                         "header": [],
                                         "url": {
-                                            "raw": "{{baseUrl}}/api/group-defaults?priority=3201425616",
+                                            "raw": "{{baseUrl}}/api/group-defaults?priority=-1",
                                             "host": [
                                                 "{{baseUrl}}"
                                             ],
@@ -640,7 +649,7 @@
                                             "query": [
                                                 {
                                                     "key": "priority",
-                                                    "value": "3201425616"
+                                                    "value": "-1"
                                                 }
                                             ]
                                         }
@@ -656,7 +665,7 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": ""
+                                    "body": "Query deserialize error: invalid digit found in string"
                                 },
                                 {
                                     "id": "4622327e-f0f7-4f6d-b48a-01be01eb1f2c",
@@ -665,7 +674,7 @@
                                         "method": "DELETE",
                                         "header": [],
                                         "url": {
-                                            "raw": "{{baseUrl}}/api/group-defaults?priority=3201425616",
+                                            "raw": "{{baseUrl}}/api/group-defaults?priority=1",
                                             "host": [
                                                 "{{baseUrl}}"
                                             ],
@@ -676,7 +685,7 @@
                                             "query": [
                                                 {
                                                     "key": "priority",
-                                                    "value": "3201425616"
+                                                    "value": "1"
                                                 }
                                             ]
                                         }
@@ -692,7 +701,7 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "{\n \"code\": 1,\n \"message\": \"est proident adipisicing\"\n}"
+                                    "body": "{\n \"code\": 3,\n \"message\": \"The store was updated, but the changes were not saved due to an error.\"\n}"
                                 }
                             ]
                         }
@@ -1763,7 +1772,7 @@
     ],
     "variable": [
         {
-            "id": "8697e76a-efac-4cba-b984-254817cb0700",
+            "id": "5d8acd5d-3d26-43fb-8161-0be824da81b0",
             "key": "baseUrl",
             "value": "localhost:8080"
         }
