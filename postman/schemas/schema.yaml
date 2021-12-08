@@ -201,6 +201,10 @@ paths:
           description: "Success response: The default configuration was inserted/updated"
         '400':
           description: "Missing or invalid paramters"
+          content:
+            text/plain:
+              schema:
+                type: string
         '500':
           description: 'Internal server error'
           content:
@@ -228,6 +232,12 @@ paths:
                   - type: array
                     items:
                       $ref: "#/components/schemas/GroupDefaultsGetOkOne"
+        '400':
+          description: "Missing or invalid parameter(s)"
+          content:
+            text/plain:
+              schema:
+                type: string
         '500':
           description: "Internal server error"
           content:
@@ -276,21 +286,18 @@ paths:
               schema:
                 type: object
                 properties:
-                  data:
-                    type: object
-                    properties:
-                      inserted:
-                        type: integer
-                        minimum: 0
-                        maximum: 4294967295
-                      deleted:
-                        type: integer
-                        minimum: 0
-                        maximum: 4294967295
-                      pruned:
-                        type: integer
-                        minimum: 0
-                        maximum: 4294967295
+                  inserted:
+                    type: integer
+                    minimum: 0
+                    maximum: 4294967295
+                  deleted:
+                    type: integer
+                    minimum: 0
+                    maximum: 4294967295
+                  pruned:
+                    type: integer
+                    minimum: 0
+                    maximum: 4294967295
         '500':
           description: "Internal server error"
           content:
@@ -379,12 +386,6 @@ paths:
                   - inserted
                   - deleted
                   - pruned
-        '400':
-          description: "Missing or invalid parameters"
-          content:
-              text/plain:
-                schema:
-                  type: string
         '500':
           description: 'Internal server error: The stats were not reset.'
           content:
