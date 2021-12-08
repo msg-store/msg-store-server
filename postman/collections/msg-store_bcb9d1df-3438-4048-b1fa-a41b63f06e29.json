@@ -1277,7 +1277,7 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "{\n \"data\": {\n  \"inserted\": 3190574209,\n  \"deleted\": 1311480374,\n  \"pruned\": 4097307533\n }\n}"
+                                    "body": "{\n  \"inserted\": 3190574209,\n  \"deleted\": 1311480374,\n  \"pruned\": 4097307533\n}"
                                 },
                                 {
                                     "id": "ed10bbec-dc23-4129-8856-7e3db8f62101",
@@ -1307,13 +1307,16 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "esse do dolore officia pariatur"
+                                    "body": "Intneral Server Error"
                                 }
                             ]
                         },
                         {
                             "name": "/api/stats",
                             "id": "274e5ca7-1e78-4eb3-ac04-ab3106e24106",
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            },
                             "request": {
                                 "method": "PUT",
                                 "header": [
@@ -1324,7 +1327,7 @@
                                 ],
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"replace\": {\n        \"inserted\": 770240997,\n        \"deleted\": 39161863,\n        \"pruned\": 3722233036\n    }\n}",
+                                    "raw": "{\n  \"replace\": {\n      \"inserted\": 770240997,\n      \"deleted\": 39161863,\n      \"pruned\": 3722233036\n  }\n}",
                                     "options": {
                                         "raw": {
                                             "language": "json"
@@ -1352,7 +1355,7 @@
                                         "header": [],
                                         "body": {
                                             "mode": "raw",
-                                            "raw": "{\n    \"replace\": {\n        \"inserted\": 770240997,\n        \"deleted\": 39161863,\n        \"pruned\": 3722233036\n    }\n}",
+                                            "raw": "{\n  \"replace\": {\n    \"inserted\": 770240997,\n    \"deleted\": 39161863,\n    \"pruned\": 3722233036\n  }\n}",
                                             "options": {
                                                 "raw": {
                                                     "language": "json"
@@ -1391,7 +1394,7 @@
                                         "header": [],
                                         "body": {
                                             "mode": "raw",
-                                            "raw": "{\n    \"replace\": {\n        \"inserted\": 770240997,\n        \"deleted\": 39161863,\n        \"pruned\": 3722233036\n    }\n}",
+                                            "raw": "{\n  \"replace\": {\n    \"inserted\": -1,\n    \"deleted\": 39161863,\n    \"pruned\": 3722233036\n  }\n}",
                                             "options": {
                                                 "raw": {
                                                     "language": "json"
@@ -1420,7 +1423,7 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "esse do dolore officia pariatur"
+                                    "body": ""
                                 },
                                 {
                                     "id": "69c992ca-59f1-4d66-b2e6-e86037a49087",
@@ -1430,7 +1433,7 @@
                                         "header": [],
                                         "body": {
                                             "mode": "raw",
-                                            "raw": "{\n    \"replace\": {\n        \"inserted\": 770240997,\n        \"deleted\": 39161863,\n        \"pruned\": 3722233036\n    }\n}",
+                                            "raw": "{\n  \"replace\": {\n    \"inserted\": 770240997,\n    \"deleted\": 39161863,\n    \"pruned\": 3722233036\n  }\n}",
                                             "options": {
                                                 "raw": {
                                                     "language": "json"
@@ -1459,13 +1462,16 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "esse do dolore officia pariatur"
+                                    "body": "Internal Server Error"
                                 }
                             ]
                         },
                         {
                             "name": "/api/stats",
                             "id": "dd186c9a-0fca-432b-8542-06498f961ebc",
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            },
                             "request": {
                                 "method": "DELETE",
                                 "header": [],
@@ -1513,36 +1519,6 @@
                                     "body": "{\n \"inserted\": 180884587,\n \"deleted\": 2875867978,\n \"pruned\": 2428792413\n}"
                                 },
                                 {
-                                    "id": "e74011b5-a1ff-4a6d-94ef-6705780f751e",
-                                    "name": "Missing or invalid parameters",
-                                    "originalRequest": {
-                                        "method": "DELETE",
-                                        "header": [],
-                                        "url": {
-                                            "raw": "{{baseUrl}}/api/stats",
-                                            "host": [
-                                                "{{baseUrl}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "stats"
-                                            ]
-                                        }
-                                    },
-                                    "status": "Bad Request",
-                                    "code": 400,
-                                    "_postman_previewlanguage": "text",
-                                    "header": [
-                                        {
-                                            "key": "Content-Type",
-                                            "value": "text/plain"
-                                        }
-                                    ],
-                                    "cookie": [],
-                                    "responseTime": null,
-                                    "body": "esse do dolore officia pariatur"
-                                },
-                                {
                                     "id": "9c1fd231-11ce-4e42-a8b6-80b779c6b7cc",
                                     "name": "Internal server error: The stats were not reset.",
                                     "originalRequest": {
@@ -1570,7 +1546,7 @@
                                     ],
                                     "cookie": [],
                                     "responseTime": null,
-                                    "body": "esse do dolore officia pariatur"
+                                    "body": "Internal Server Error"
                                 }
                             ]
                         }
@@ -1791,7 +1767,7 @@
     ],
     "variable": [
         {
-            "id": "8d8627c3-e2f4-46c7-876e-9bae14d1c7ac",
+            "id": "07b7f698-7c47-46b3-a0de-5cfbb0873745",
             "key": "baseUrl",
             "value": "localhost:8080"
         }
