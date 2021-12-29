@@ -1,25 +1,14 @@
-use serde::{
-    Deserialize,
-    Serialize
-};
-use serde_json::{
-    to_string_pretty as to_json_string,
-    from_str as from_json_str
-};
+use serde::{Deserialize, Serialize};
+use serde_json::{from_str as from_json_str, to_string_pretty as to_json_string};
 use std::{
-    fs::{
-        self,
-        read_to_string
-    },
-    path::{
-        PathBuf
-    }
+    fs::{self, read_to_string},
+    path::PathBuf,
 };
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct GroupConfig {
     pub priority: u32,
-    pub max_byte_size: Option<u32>
+    pub max_byte_size: Option<u32>,
 }
 
 cfg_if::cfg_if! {
@@ -80,11 +69,7 @@ cfg_if::cfg_if! {
 
 }
 
-
-
-
 impl StoreConfig {
-    
     pub fn open(config_path: PathBuf) -> StoreConfig {
         let contents: String = read_to_string(config_path).expect("Could not read config");
         from_json_str(&contents).expect("Invalid JSON config.")
@@ -92,7 +77,7 @@ impl StoreConfig {
     pub fn update_config_file(&self, config_path: &PathBuf) -> Result<(), String> {
         let contents = match to_json_string(&self) {
             Ok(contents) => Ok(contents),
-            Err(error) => Err(error.to_string())
+            Err(error) => Err(error.to_string()),
         }?;
         if let Err(error) = fs::write(config_path, contents) {
             return Err(error.to_string());

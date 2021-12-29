@@ -1,61 +1,78 @@
+use crate::{
+    api::{
+        get_require_msg, get_required_priority, http_reply,
+        ws::{command::MSG_POST, Websocket},
+        ws_reply_with, Reply,
+    },
+    AppData,
+};
 use actix_web::{
+    web::{Data, Json},
     HttpResponse,
-    web::{
-        Data,
-        Json
-    }
 };
-use crate::AppData;
-use msg_store::{Packet, errors::Error};
-use serde::{
-    Deserialize, 
-    Serialize
-};
+use actix_web_actors::ws;
+use msg_store::{errors::Error, Packet};
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::process::exit;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Body {
     priority: u32,
-    msg: String
+    msg: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(untagged)]
-pub enum Reply {
-    Ok { uuid: String },
-    Err { code: u32, message: String }
-}
-impl Reply {
-    pub fn exceeds_store_max() -> Reply {
-        Reply::Err{ code: 1, message: "Message byte size exceeds the max byte size limit allowed by the store".to_string() }
-    }
-    pub fn exceeds_group_max() -> Reply {
-        Reply::Err{ code: 2, message: "Message byte size exceeds the max byte size limit allowed by the group".to_string() }
-    }
-    pub fn lacks_priority() -> Reply {
-        Reply::Err{ code: 3, message: "The store has reached max capcity and could not accept message".to_string() }
-    }
-    pub fn internal_server_error() -> Reply {
-        Reply::Err { code: 4, message: "Internal Server Error".to_string() }
-    }
+pub struct ReturnBody {
+    uuid: String,
 }
 
-pub fn post(data: Data<AppData>, body: Json<Body>) -> HttpResponse {
+pub fn handle(data: Data<AppData>, body: Value) -> Reply<ReturnBody> {
     let mut store = match data.store.try_lock() {
         Ok(store) => store,
-        Err(_error) => {
-            return HttpResponse::InternalServerError().finish();
-        }
+        Err(_error) => exit(1),
     };
+    let priority = match get_required_priority(&body) {
+        Ok(priority) => priority,
+        Err(message) => return Reply::BadRequest(message),
+    };
+    let msg = match get_require_msg(&body) {
+        Ok(msg) => msg,
+        Err(message) => return Reply::BadRequest(message),
+    };
+    let body = Body { priority, msg };
     let uuid = match store.add(Packet::new(body.priority, body.msg.to_string())) {
         Ok(uuid) => uuid,
-        Err(error) => {
-            match error {
-                Error::ExceedesStoreMax => { return HttpResponse::Conflict().json(Reply::exceeds_store_max()); },
-                Error::ExceedesGroupMax => { return HttpResponse::Conflict().json(Reply::exceeds_group_max()); },
-                Error::LacksPriority => { return HttpResponse::Conflict().json(Reply::lacks_priority()); },
-                _ => { return HttpResponse::InternalServerError().json(Reply::internal_server_error()); }
-            }            
-        }
+        Err(error) => match error {
+            Error::ExceedesStoreMax => {
+                return Reply::Conflict(
+                    "Message byte size exceeds the max byte size limit allowed by the store"
+                        .to_string(),
+                );
+            }
+            Error::ExceedesGroupMax => {
+                return Reply::Conflict(
+                    "Message byte size exceeds the max byte size limit allowed by the group"
+                        .to_string(),
+                );
+            }
+            Error::LacksPriority => {
+                return Reply::Conflict(
+                    "The store has reached max capcity and could not accept message".to_string(),
+                );
+            }
+            _ => exit(1),
+        },
     };
-    HttpResponse::Ok().json(Reply::Ok { uuid: uuid.to_string() })
+    Reply::OkWData(ReturnBody {
+        uuid: uuid.to_string(),
+    })
+}
+
+pub fn http_handle(data: Data<AppData>, body: Json<Value>) -> HttpResponse {
+    http_reply(handle(data, body.into_inner()))
+}
+
+pub fn ws_handle(ctx: &mut ws::WebsocketContext<Websocket>, data: Data<AppData>, obj: Value) {
+    ws_reply_with(ctx, MSG_POST)(handle(data, obj));
 }
