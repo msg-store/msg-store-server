@@ -702,6 +702,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "env_logger"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b2cf0344971ee6c64c31be0d530793fba457d322dfec2810c453d0ef228f9c3"
+dependencies = [
+ "atty",
+ "humantime",
+ "log",
+ "regex",
+ "termcolor",
+]
+
+[[package]]
 name = "ffi-opaque"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -936,6 +949,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "acd94fdbe1d4ff688b67b04eee2e17bd50995534a61539e45adfefb45e5e5503"
 
 [[package]]
+name = "humantime"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
+
+[[package]]
 name = "idna"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1160,20 +1179,36 @@ dependencies = [
 
 [[package]]
 name = "msg-store"
-version = "0.7.1"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dba51a94bf0ac9b6b4db87ef450a5c2d196482a0131f3ed103a5b63ef668e8d2"
+checksum = "3932ea6750e5692ebff97152960fc7f970d57798673e7ea896c47e01cb6a941b"
+
+[[package]]
+name = "msg-store-db-plugin"
+version = "0.1.0"
+source = "git+https://github.com/msg-store/msg-store-db-plugin?branch=develop#c60614fbe818417129ed421a8602bab0ea8d8e05"
+dependencies = [
+ "msg-store",
+]
+
+[[package]]
+name = "msg-store-db-plugin"
+version = "0.1.0"
+source = "git+https://github.com/msg-store/msg-store-db-plugin?rev=da1cb6365bfc2d5e0e32d2e5755c0682eff15158#da1cb6365bfc2d5e0e32d2e5755c0682eff15158"
+dependencies = [
+ "msg-store",
+]
 
 [[package]]
 name = "msg-store-plugin-leveldb"
 version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0d48c42a1c8665296af55921705270a9ef5907e162edab27eb30135bbb59b9d"
+source = "git+https://github.com/msg-store/msg-store-plugin-leveldb?branch=master#73d45d5887b7605a1c3fde8b9d052f04bbc1e469"
 dependencies = [
  "bincode",
  "db-key",
  "leveldb",
  "msg-store",
+ "msg-store-db-plugin 0.1.0 (git+https://github.com/msg-store/msg-store-db-plugin?branch=develop)",
  "serde",
 ]
 
@@ -1187,7 +1222,10 @@ dependencies = [
  "cfg-if 1.0.0",
  "clap",
  "dirs",
+ "env_logger",
+ "log",
  "msg-store",
+ "msg-store-db-plugin 0.1.0 (git+https://github.com/msg-store/msg-store-db-plugin?rev=da1cb6365bfc2d5e0e32d2e5755c0682eff15158)",
  "msg-store-plugin-leveldb",
  "serde",
  "serde_json",
@@ -1705,6 +1743,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "termcolor"
+version = "1.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2dfed899f0eb03f32ee8c6a0aabdb8a7949659e3466561fc0adf54e26d88c5f4"
+dependencies = [
+ "winapi-util",
+]
+
+[[package]]
 name = "textwrap"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2063,6 +2110,15 @@ name = "winapi-i686-pc-windows-gnu"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"
+
+[[package]]
+name = "winapi-util"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "70ec6ce85bb158151cae5e5c87f95a8e97d2c0c4b001223f33a334e3ce5de178"
+dependencies = [
+ "winapi 0.3.9",
+]
 
 [[package]]
 name = "winapi-x86_64-pc-windows-gnu"
