@@ -13,8 +13,9 @@ actix-web-actors = "3"
 cfg-if = "1.0.0"
 clap = "2.33.3"
 dirs = "1.0.4"
-msg-store = "0.7.1"
-msg-store-plugin-leveldb = { version = "0.5.1", optional = true }
+msg-store = "0.8.0"
+msg-store-db-plugin = { git = "https://github.com/msg-store/msg-store-db-plugin", rev = "da1cb6365bfc2d5e0e32d2e5755c0682eff15158" }
+msg-store-plugin-leveldb = { git = "https://github.com/msg-store/msg-store-plugin-leveldb", branch = "master", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
