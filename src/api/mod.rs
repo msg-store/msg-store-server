@@ -41,107 +41,6 @@ pub enum Reply<T: Serialize> {
     Conflict(String),
 }
 
-// pub enum OkReply<T: Serialize> {
-//     Ok,
-//     OkWData(T)
-// }
-
-// pub enum Error {
-//     BadRequest(String),
-//     Conflict(String)
-// }
-
-// pub fn if_ok<A, B, C, Z, Y>(ok_handle: Z, err_handle: Y) -> impl Fn(Result<A,B>) -> C
-// where
-//     Z: Fn(A) -> C + Copy,
-//     Y: Fn(B) -> C + Copy
-// {
-//     move |r| {
-//         match r {
-//             Ok(a) => ok_handle(a),
-//             Err(b) => err_handle(b)
-//         }
-//     }
-// }
-
-// pub fn mk_json() -> Value {
-//     json!({  })
-// }
-
-// pub fn append_status<T: Serialize>(status: T) -> impl Fn(Value) -> Value {
-//     move |mut value| {
-//         value["status"] = json!(status);
-//         value
-//     }
-// }
-
-// pub fn append_cmd<T: Serialize>(cmd: T) -> impl Fn(Value) -> Value {
-//     move |mut value| {
-//         value["cmd"] = json!(cmd);
-//         value
-//     }
-// }
-
-// pub fn append_data<T: Serialize>(data: T) -> impl Fn(Value) -> Value {
-//     move |mut value| {
-//         value["data"] = json!(data);
-//         value
-//     }
-// }
-
-// pub fn append_error_message(message: String) -> impl Fn(Value) -> Value {
-//     move |mut value| {
-//         value["message"] = json!(message);
-//         value
-//     }
-// }
-
-// pub fn append_error_code(code: u32) -> impl Fn(Value) -> Value {
-//     move |mut value| {
-//         value["errorCode"] = json!(code);
-//         value
-//     }
-// }
-
-// pub fn convert_to_string() -> impl Fn(Value) -> String {
-//     |value| {
-//         match to_string(&value) {
-//             Ok(value) => value,
-//             Err(_error) => {
-//                 exit(1);
-//             }
-//         }
-//     }
-// }
-
-// pub fn get_prop<T1: DeserializeOwned,T2: Index + Copy>(prop: T2) -> impl Fn(Value) -> Result<Option<T1>, String> {
-//     move |value| {
-//         match value.get(prop) {
-//             Some(property) => match from_value(property.to_owned()) {
-//                 Ok(property) => Ok(Some(property)),
-//                 Err(error) => Err(error.to_string())
-//             },
-//             None => Ok(None)
-//         }
-//     }
-// }
-
-// pub fn require_prop<T: DeserializeOwned>() -> impl Fn(Result<Option<T>, String>) -> Result<T, String> {
-//     |result| {
-//         match result {
-//             Ok(option) => match option {
-//                 Some(value) => Ok(value),
-//                 None => Err("missing crap".to_string())
-//             },
-//             Err(error) => Err(error)
-//         }
-//     }
-// }
-
-// pub fn send_value<'a>(ctx: &'a mut WebsocketContext<Websocket>) -> impl FnMut(String) + 'a {
-//     move |data| ctx.text(data)
-// }
-
 pub fn from_value_prop<'a, T: DeserializeOwned, T2: Into<String> + Display>(
     value: &Value,
     prop: &'static str,
@@ -181,14 +80,6 @@ pub fn from_value_prop_required<'a, T: DeserializeOwned>(
 pub fn get_optional_number(value: &Value, prop: &'static str) -> Result<Option<u32>, String> {
     from_value_prop::<u32, _>(value, prop, "number")
 }
-
-// pub fn get_required_number(value: &Value, prop: &'static str) -> Result<u32, String> {
-//     from_value_prop_required(value, prop, "number")
-// }
-
-// pub fn get_optional_string(value: &Value, prop: &'static str) -> Result<Option<String>, String> {
-//     from_value_prop(value, prop, "string")
-// }
 
 pub fn get_required_string(value: &Value, prop: &'static str) -> Result<String, String> {
     from_value_prop_required(value, prop, "string")
