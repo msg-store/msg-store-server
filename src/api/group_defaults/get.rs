@@ -2,7 +2,7 @@ use crate::{
     api::{
         get_optional_priority, http_reply,
         ws::{command::GROUP_DEFAULTS_GET, Websocket},
-        ws_reply_with, Reply,
+        ws_reply_with, Reply, lock_or_exit, http_route_hit_log
     },
     AppData,
 };
@@ -13,9 +13,8 @@ use actix_web::{
 use actix_web_actors::ws::WebsocketContext;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::process::exit;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Info {
     priority: Option<u32>,
 }
@@ -28,12 +27,7 @@ pub struct GroupDefaults {
 }
 
 pub fn handle(data: Data<AppData>, info: Info) -> Reply<Vec<GroupDefaults>> {
-    let store = match data.store.try_lock() {
-        Ok(store) => store,
-        Err(_error) => {
-            exit(1);
-        }
-    };
+    let store = lock_or_exit(&data.store);
     if let Some(priority) = info.priority {
         if let Some(defaults) = store.group_defaults.get(&priority) {
             let group_defaults = GroupDefaults {
@@ -57,11 +51,14 @@ pub fn handle(data: Data<AppData>, info: Info) -> Reply<Vec<GroupDefaults>> {
     }
 }
 
+const ROUTE: &'static str = "GET /api/group-defaults";
 pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
-    http_reply(handle(data, info.into_inner()))
+    http_route_hit_log(ROUTE, Some(info.clone()));
+    http_reply(ROUTE, handle(data, info.into_inner()))
 }
 
 pub fn ws_handle(ctx: &mut WebsocketContext<Websocket>, data: Data<AppData>, info: Value) {
+    http_route_hit_log(GROUP_DEFAULTS_GET, Some(info.clone()));
     let mut reply = ws_reply_with(ctx, GROUP_DEFAULTS_GET);
     let priority = match get_optional_priority(&info) {
         Ok(priority) => priority,

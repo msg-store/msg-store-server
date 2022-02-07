@@ -2,9 +2,10 @@ use crate::{
     api::{
         from_value_prop, get_optional_number, http_reply,
         ws::{command::STATS_PUT, Websocket},
-        ws_reply_with, Reply,
+        ws_reply_with, Reply, lock_or_exit, http_route_hit_log
     },
-    AppData, Store,
+    AppData,
+    lib::Stats
 };
 use actix_web::{
     web::{Data, Json},
@@ -13,7 +14,7 @@ use actix_web::{
 use actix_web_actors::ws;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::{process::exit, sync::MutexGuard};
+use std::sync::MutexGuard;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct StatsProps {
@@ -31,7 +32,7 @@ pub struct Body {
     pruned: Option<u32>,
 }
 
-pub fn get_value(value: Value) -> Result<Body, Reply<()>> {
+pub fn get_value(value: Value) -> Result<Body, Reply<Stats>> {
     let add = match from_value_prop::<bool, _>(&value, "add", "boolean") {
         Ok(value) => value,
         Err(_error) => {
@@ -72,55 +73,57 @@ pub fn get_value(value: Value) -> Result<Body, Reply<()>> {
     })
 }
 
-pub fn handle(data: Data<AppData>, body: Value) -> Reply<()> {
-    let mut store = match data.store.try_lock() {
-        Ok(store) => store,
-        Err(_error) => {
-            exit(1);
-        }
-    };
+pub fn handle(data: Data<AppData>, body: Value) -> Reply<Stats> {
     let body = match get_value(body) {
         Ok(body) => body,
         Err(reply) => return reply,
     };
-    let add_to = |body: Body, store: &mut MutexGuard<Store>| {
+    let add_to = |body: Body, stats: &mut MutexGuard<Stats>| {
         if let Some(inserted) = body.inserted {
-            store.msgs_inserted += inserted;
+            stats.inserted += inserted;
         }
         if let Some(deleted) = body.deleted {
-            store.msgs_deleted += deleted;
+            stats.deleted += deleted;
         }
         if let Some(pruned) = body.pruned {
-            store.msgs_pruned += pruned;
+            stats.pruned += pruned;
         }
     };
-    let replace_current = |body: Body, store: &mut MutexGuard<Store>| {
+    let replace_current = |body: Body, stats: &mut MutexGuard<Stats>| {
         if let Some(inserted) = body.inserted {
-            store.msgs_inserted = inserted;
+            stats.inserted = inserted;
         }
         if let Some(deleted) = body.deleted {
-            store.msgs_deleted = deleted;
+            stats.deleted = deleted;
         }
         if let Some(pruned) = body.pruned {
-            store.msgs_pruned = pruned;
+            stats.pruned = pruned;
         }
     };
-    if let Some(add) = body.add {
-        if add {
-            add_to(body, &mut store);
+    let stats = {
+        let mut stats = lock_or_exit(&data.stats);
+        let old_stats = stats.clone();
+        if let Some(add) = body.add {
+            if add {
+                add_to(body, &mut stats);
+            } else {
+                replace_current(body, &mut stats);
+            }
         } else {
-            replace_current(body, &mut store);
+            replace_current(body, &mut stats);
         }
-    } else {
-        replace_current(body, &mut store);
-    }
-    Reply::Ok
+        old_stats
+    };
+    Reply::OkWData(stats)
 }
 
+const ROUTE: &'static str = "PUT /api/stats";
 pub fn http_handle(data: Data<AppData>, body: Json<Value>) -> HttpResponse {
-    http_reply(handle(data, body.into_inner()))
+    http_route_hit_log(ROUTE, Some(body.clone()));
+    http_reply(ROUTE, handle(data, body.into_inner()))
 }
 
 pub fn ws_handle(ctx: &mut ws::WebsocketContext<Websocket>, data: Data<AppData>, body: Value) {
+    http_route_hit_log(STATS_PUT, Some(body.clone()));
     ws_reply_with(ctx, STATS_PUT)(handle(data, body));
 }

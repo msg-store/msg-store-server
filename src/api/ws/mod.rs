@@ -12,10 +12,12 @@ use actix_web::{
     HttpResponse,
 };
 use actix_web_actors::ws;
+use log::error;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::process::exit;
 
-use super::{from_value_prop_required, get_required_string, ws_bad_request};
+use super::{from_value_prop_required, get_required_string, ws_bad_request, http_route_hit_log, ws_not_found};
 
 /// do websocket handshake and start `MyWebSocket` actor
 pub async fn ws_index(
@@ -79,7 +81,13 @@ enum Response {
 
 impl From<Response> for String {
     fn from(response: Response) -> Self {
-        serde_json::to_string(&response).unwrap()
+        match serde_json::to_string(&response) {
+            Ok(text) => text,
+            Err(error) => {
+                error!("ERROR_CODE: 4806076e-4ce9-45a2-b753-c423046d8263. Could not convert response into string: {}", error.to_string());
+                exit(1);
+            }
+        }
     }
 }
 
@@ -92,6 +100,8 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Websocket {
             }
             Ok(ws::Message::Pong(_)) => {}
             Ok(ws::Message::Text(text)) => {
+
+                http_route_hit_log("/api/ws", Some(text.clone()));
 
                 let obj = match serde_json::from_str::<Value>(&text) {
                     Ok(obj) => obj,
@@ -117,9 +127,9 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Websocket {
                 };
                 let app_data = self.app_data.clone();
                 if route == command::MSG_GET {
-                    api::msg::get::ws_handle(ctx, app_data, data);
+                    // api::msg::get::ws_handle(ctx, app_data, data);
                 } else if route == command::MSG_POST {
-                    api::msg::post::ws_handle(ctx, app_data, data);
+                    // api::msg::post::ws_handle(ctx, app_data, data);
                 } else if route == command::MSG_DELETE {
                     api::msg::delete::ws_handle(ctx, app_data, data);
                 } else if route == command::GROUP_GET {
@@ -145,10 +155,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Websocket {
                 } else if route == command::EXPORT {
                     api::export::ws_handle(ctx, app_data, data);
                 } else {
-                    ctx.text(Response::NotFound {
-                        code: 404,
-                        message: "/cmd is unknown",
-                    });
+                    ctx.text(ws_not_found(&route, "/cmd is unknown".to_string()));
                 }
             }
             Ok(ws::Message::Binary(bin)) => ctx.binary(bin),

@@ -5,7 +5,12 @@ use crate::{
         // ws::{command::MSG_POST, Websocket},
         // ws_reply_with, 
         Reply, lock_or_exit, 
-        http_route_hit_log, FileManager
+        http_route_hit_log,
+        lower::{
+            Database,
+            FileList,
+            Store
+        }
     },
     AppData,
 };
@@ -21,15 +26,17 @@ use actix_web::{
 use futures::StreamExt;
 use log::{
     error, 
-    // debug
+    debug
 };
 use msg_store::errors::Error;
-use msg_store_db_plugin::Bytes;
 use serde::{Deserialize, Serialize};
 // use serde_json::Value;
 use std::{
     collections::BTreeMap,
-    process::exit
+    process::exit,
+    fs::{File, remove_file},
+    io::Write,
+    sync::Mutex
 };
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -45,7 +52,9 @@ pub struct ReturnBody {
     uuid: String,
 }
 
-pub async fn handle(data: Data<AppData>, mut payload: Payload) -> Reply<ReturnBody> {
+pub async fn handle(
+    store: Store,
+    file_list: Option<FileList>, mut payload: Payload) -> Reply<ReturnBody> {
 
     let mut metadata_string = String::new();
     let mut msg_chunk = BytesMut::new();
@@ -102,10 +111,7 @@ pub async fn handle(data: Data<AppData>, mut payload: Payload) -> Reply<ReturnBo
             }
             if let Some(save_to_file_value) = metadata.remove("saveToFile") {
                 if save_to_file_value.to_lowercase() == "true" {
-                    if let None = data.file_manager {
-                        while let Some(_chunk) = payload.next().await {
-
-                        }
+                    if let None = file_list {
                         return Reply::BadRequest("Store does not allow files to be saved.".to_string());
                     }
                     save_to_file = true;
@@ -204,8 +210,21 @@ pub async fn handle(data: Data<AppData>, mut payload: Payload) -> Reply<ReturnBo
                 exit(1);
             }
         }
-        if let Some(file_manager) = &data.file_manager {
-            FileManager::del(file_manager, &uuid);
+        {
+            let file_list = match &data.file_list {
+                Some(file_list) => file_list,
+                None => {
+                    error!("ERROR_CODE: 95483642-ff35-48e4-89b8-6b4d8d44b246. File list could not be found.");
+                    exit(1);
+                }
+            };
+            let mut file_list = lock_or_exit(&file_list);
+            if file_list.remove(&uuid) {
+                if let Err(error) = remove_file(format!("/tmp/msg-store-file-items/{}", uuid.to_string())) {
+                    error!("ERROR_CODE: a86b06c9-fd6a-4bd9-b30b-3ab4895af8e0. Could not remove file: {}", error.to_string());
+                    exit(1);
+                }
+            }
         }
         deleted_count += 1;
     }
@@ -214,112 +233,58 @@ pub async fn handle(data: Data<AppData>, mut payload: Payload) -> Reply<ReturnBo
         stats.deleted += deleted_count;
         stats.inserted += 1;
     }
-    // add to file manager if needed
-    if save_to_file {
-        if let Some(file_manager) = &data.file_manager {
-            FileManager::add(file_manager, add_result.uuid, &msg_chunk, &mut payload).await;
+    {
+        if save_to_file {
+            {
+                let file_list = match &data.file_list {
+                    Some(file_list) => file_list,
+                    None => {
+                        error!("ERROR_CODE: 4914b57f-0581-451d-996b-88e5953fa793. File list could not be found.");
+                        exit(1);
+                    }
+                };
+                let mut file_list = lock_or_exit(&file_list);
+                file_list.insert(add_result.uuid.clone());
+            }
+            // TODO: change file save location
+            let mut file = match File::create(format!("/tmp/msg-store-file-items/{}", add_result.uuid.to_string())) {
+                Ok(file) => file,
+                Err(error) => {
+                    error!("ERROR_CODE: 0df10fb3-058f-4e4c-936e-ab8d8f2865e1. Could not create file: {}", error);
+                    exit(1);
+                }
+            };
+            if let Err(error) = file.write(&msg_chunk.to_vec()) {
+                error!("ERROR_CODE: ead714f3-9217-4d4d-bcf0-dc592421e429. Could not write to file: {}", error);
+                exit(1);
+            };
+            while let Some(chunk) = payload.next().await {
+                let chunk = match chunk {
+                    Ok(chunk) => chunk,
+                    Err(error) => {
+                        error!("ERROR_CODE: ac566987-87f3-4a59-becc-ef6f264b826b. Could parse mutlipart field: {}", error.to_string());
+                        exit(1);
+                    }
+                };
+                if let Err(error) = file.write(&chunk) {
+                    error!("ERROR_CODE: 0e15385e-d6c5-4eee-bffa-b7fb79916424. Could not write to file: {}", error);
+                    exit(1);
+                };
+            }
+            let mut db = lock_or_exit(&data.db);
+            if let Err(error) = db.add(add_result.uuid, msg, msg_byte_size) {
+                error!("ERROR_CODE: f106eed6-1c47-4437-b9c3-082a4c5393af. Could not add msg to database: {}", error);
+                exit(1);
+            }
         } else {
-            return Reply::BadRequest("File manager not present on server.".to_string());
-        }
-    }
-    {        
-        let mut db = lock_or_exit(&data.db);
-        if let Err(error) = db.add(add_result.uuid, Bytes::copy_from_slice(msg.as_bytes()), msg_byte_size) {
-            error!("ERROR_CODE: f106eed6-1c47-4437-b9c3-082a4c5393af. Could not add msg to database: {}", error);
-            exit(1);
+            let mut db = lock_or_exit(&data.db);
+            if let Err(error) = db.add(add_result.uuid, msg, msg_byte_size) {
+                error!("ERROR_CODE: f106eed6-1c47-4437-b9c3-082a4c5393af. Could not add msg to database: {}", error);
+                exit(1);
+            }
         }
     }
     Reply::OkWData(ReturnBody {
         uuid: add_result.uuid.to_string(),
     })
 }
-
-const ROUTE: &'static str = "POST /api/msg";
-pub async fn http_handle(data: Data<AppData>, body: Payload) -> HttpResponse {
-    http_route_hit_log::<()>(ROUTE, None);
-    http_reply(ROUTE, handle(data, body).await)
-}
-
-// pub fn ws_handle(ctx: &mut ws::WebsocketContext<Websocket>, data: Data<AppData>, obj: Value) {
-//     http_route_hit_log(MSG_POST, Some(obj.clone()));
-//     ws_reply_with(ctx, MSG_POST)(handle(data, obj));
-// }
-
-// pub fn handle(data: Data<AppData>, body: Value) -> Reply<ReturnBody> {
-
-//     let msg = match get_require_msg(&body) {
-//         Ok(msg) => msg,
-//         Err(message) => return Reply::BadRequest(message),
-//     };
-//     let msg_byte_size = msg.len() as u32;
-//     let add_result = {
-//         let mut store = lock_or_exit(&data.store);
-//         let priority = match get_required_priority(&body) {
-//             Ok(priority) => priority,
-//             Err(message) => return Reply::BadRequest(message),
-//         };        
-//         match store.add(priority, msg_byte_size) {
-//             Ok(add_result) => add_result,
-//             Err(error) => match error {
-//                 Error::ExceedesStoreMax => {
-//                     return Reply::Conflict(
-//                         "Message byte size exceeds the max byte size limit allowed by the store"
-//                             .to_string(),
-//                     );
-//                 }
-//                 Error::ExceedesGroupMax => {
-//                     return Reply::Conflict(
-//                         "Message byte size exceeds the max byte size limit allowed by the group"
-//                             .to_string(),
-//                     );
-//                 }
-//                 Error::LacksPriority => {
-//                     return Reply::Conflict(
-//                         "The store has reached max capcity and could not accept message".to_string(),
-//                     );
-//                 }
-//                 error => {
-//                     error!("ERROR_CODE: c911f827-35ec-42aa-8ca3-2b10b68209c9. {}", error.to_string());
-//                     exit(1)
-//                 },
-//             },
-//         }
-//     };    
-    
-//     // remove msgs from db
-//     let mut deleted_count = 0;
-//     for uuid in add_result.msgs_removed.into_iter() {
-//         let mut db = lock_or_exit(&data.db);
-//         if let Err(error) = db.del(uuid) {
-//             error!("ERROR_CODE: 0753a0a2-5436-44e1-bb05-6e81193ad9e7. Could not remove msg from database: {}", error);
-//             exit(1);
-//         }
-//         deleted_count += 1;
-//     }
-//     {
-//         let mut stats = lock_or_exit(&data.stats);
-//         stats.deleted += deleted_count;
-//         stats.inserted += 1;
-//     }
-//     {
-//         let mut db = lock_or_exit(&data.db);
-//         if let Err(error) = db.add(add_result.uuid, msg, msg_byte_size) {
-//             error!("ERROR_CODE: f106eed6-1c47-4437-b9c3-082a4c5393af. Could not add msg to database: {}", error);
-//             exit(1);
-//         }
-//     }
-//     Reply::OkWData(ReturnBody {
-//         uuid: add_result.uuid.to_string(),
-//     })
-// }
-
-// const ROUTE: &'static str = "POST /api/msg";
-// pub fn http_handle(data: Data<AppData>, body: Json<Value>) -> HttpResponse {
-//     http_route_hit_log(ROUTE, Some(body.clone()));
-//     http_reply(ROUTE, handle(data, body.into_inner()))
-// }
-
-// pub fn ws_handle(ctx: &mut ws::WebsocketContext<Websocket>, data: Data<AppData>, obj: Value) {
-//     http_route_hit_log(MSG_POST, Some(obj.clone()));
-//     ws_reply_with(ctx, MSG_POST)(handle(data, obj));
-// }

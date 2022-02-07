@@ -3,35 +3,57 @@ use actix_web::{
     web::{self, Data},
     App, HttpServer,
 };
-use std::{path::PathBuf, sync::Mutex};
+use msg_store::{Uuid, Store};
+use msg_store_db_plugin::Db;
+use env_logger::{Builder, Target};
+use std::{
+    collections::BTreeSet,
+    path::PathBuf, sync::Mutex
+};
 
 mod api;
 mod config;
 mod init;
+mod lib;
+// mod plugins;
 
 use config::StoreConfig;
-
-use init::{init, Store};
+use init::init;
+use lib::Stats;
+// use api;
 
 // pub type StoreGaurd<'a> = MutexGuard<'a, Store>;
 // pub type ConfigGaurd<'a> = MutexGuard<'a, StoreConfig>;
 
+// TODO: read saved files list on start up
+
 pub struct AppData {
     pub store: Mutex<Store>,
-    pub config_location: Option<PathBuf>,
-    pub config: Mutex<StoreConfig>,
+    pub configuration: Mutex<StoreConfig>,
+    pub configuration_path: Option<PathBuf>,
+    pub db: Mutex<Box<dyn Db>>,
+    pub file_manager: Option<Mutex<api::FileManager>>,
+    pub stats: Mutex<Stats>
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    std::env::set_var("RUST_LOG", "actix_server=info,actix_web=info");
+    std::env::set_var("RUST_LOG", "debug,actix_server=info,actix_web=error");
+    // std::env::set_var("RUST_LOG", "debug,actix_server=info");
+    let mut builder = Builder::from_default_env();
+    builder.target(Target::Stdout).init();
+    // env_logger::init();
 
     let init_result = init();
 
+
     let app_data = Data::new(AppData {
-        store: Mutex::new(init_result.store),
-        config_location: init_result.config_location,
-        config: Mutex::new(init_result.store_config),
+        store: init_result.store,
+        db: init_result.db,
+        file_manager: init_result.file_manager,
+        configuration_path: init_result.configuration_path,
+        configuration: init_result.configuration,
+        stats: init_result.stats
     });
 
     HttpServer::new(move || {
@@ -57,7 +79,7 @@ async fn main() -> std::io::Result<()> {
                 "/api/group-defaults",
                 web::post().to(api::group_defaults::post::http_handle),
             )
-            .route("/api/msg", web::get().to(api::msg::get::http_handle))
+            .route("/api/msg", web::get().to(api::msg::get::handle))
             .route("/api/msg", web::delete().to(api::msg::delete::http_handle))
             .route("/api/msg", web::post().to(api::msg::post::http_handle))
             .route(
