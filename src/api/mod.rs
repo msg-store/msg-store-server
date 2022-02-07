@@ -22,14 +22,21 @@ use std::{
     io::{BufReader, Write},
     path::{Path, PathBuf}, 
     process::exit, 
-    sync::{Mutex, MutexGuard}
+    sync::{Arc, Mutex, MutexGuard}
 };
 
 use self::ws::Websocket;
 
+#[derive(Debug, Clone, Copy, Serialize)]
+pub struct Stats {
+    pub inserted: u32,
+    pub deleted: u32,
+    pub pruned: u32
+}
+
 pub struct FileManager {
     file_storage_path: PathBuf,
-    file_list: BTreeSet<Uuid>
+    file_list: BTreeSet<Arc<Uuid>>
 }
 impl FileManager {
     pub fn new(file_storage_path: &Path) -> Self {
@@ -81,7 +88,7 @@ impl FileManager {
         }
         file_manager
     }
-    pub async fn add(file_manager: &Mutex<Self>, uuid: Uuid, msg_chunk: &[u8], payload: &mut Payload) {
+    pub async fn add(file_manager: &Mutex<Self>, uuid: Arc<Uuid>, msg_chunk: &[u8], payload: &mut Payload) {
         let mut file_manager: MutexGuard<Self> = lock_or_exit(&file_manager);
         file_manager.file_list.insert(uuid.clone());
         let mut file_path = file_manager.file_storage_path.clone();
@@ -111,7 +118,7 @@ impl FileManager {
             };
         }
     }
-    pub fn get(file_manager: &Mutex<Self>, uuid: Uuid) -> Option<(BufReader<File>, u64)> {
+    pub fn get(file_manager: &Mutex<Self>, uuid: Arc<Uuid>) -> Option<(BufReader<File>, u64)> {
         let file_manager = lock_or_exit(&file_manager);
         if !file_manager.file_list.contains(&uuid) {
             return None;
@@ -137,7 +144,7 @@ impl FileManager {
         let buffer = BufReader::new(file);
         return Some((buffer, file_size));
     }
-    pub fn del(file_manager: &Mutex<Self>, uuid: &Uuid)  {
+    pub fn del(file_manager: &Mutex<Self>, uuid: Arc<Uuid>)  {
         let mut file_manager = lock_or_exit(&file_manager);
         if !file_manager.file_list.remove(&uuid) {
             return;
@@ -150,7 +157,7 @@ impl FileManager {
             exit(1);
         }
     }
-    pub fn del_batch(&mut self, uuids: Vec<Uuid>)  {
+    pub fn del_batch(&mut self, uuids: Vec<Arc<Uuid>>)  {
         for uuid in uuids {
             if !self.file_list.remove(&uuid) {
                 return;
@@ -251,7 +258,7 @@ pub fn get_optional_max_byte_size(value: &Value) -> Result<Option<u32>, String> 
     Ok(max_byte_size)
 }
 
-pub fn validate_uuid_string(uuid_string: String) -> Result<Uuid, String> {
+pub fn validate_uuid_string(uuid_string: String) -> Result<Arc<Uuid>, String> {
     match Uuid::from_string(&uuid_string) {
         Ok(uuid) => Ok(uuid),
         Err(_) => Err(format!("uuid string must be of <u128>-<u32>")),
@@ -271,7 +278,7 @@ pub fn validate_uuid_string(uuid_string: String) -> Result<Uuid, String> {
 //     }
 // }
 
-pub fn get_required_uuid(value: &Value) -> Result<Uuid, String> {
+pub fn get_required_uuid(value: &Value) -> Result<Arc<Uuid>, String> {
     match from_value_prop_required::<String>(value, "uuid", "string") {
         Ok(uuid_string) => match validate_uuid_string(uuid_string) {
             Ok(uuid) => Ok(uuid),

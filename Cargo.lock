@@ -1205,12 +1205,12 @@ dependencies = [
 [[package]]
 name = "msg-store"
 version = "0.8.0"
-source = "git+https://github.com/msg-store/msg-store?rev=55e4a422aca650b172a45aa961ef901576bb8e84#55e4a422aca650b172a45aa961ef901576bb8e84"
+source = "git+https://github.com/msg-store/msg-store?rev=8b99422811caa553f5ebc70fd1c645dac79aff4a#8b99422811caa553f5ebc70fd1c645dac79aff4a"
 
 [[package]]
 name = "msg-store-db-plugin"
 version = "0.1.0"
-source = "git+https://github.com/msg-store/msg-store-db-plugin?rev=0f7187474fe9b3828640cc83f1bd85a2f91a2c2c#0f7187474fe9b3828640cc83f1bd85a2f91a2c2c"
+source = "git+https://github.com/msg-store/msg-store-db-plugin?rev=77c9c952856a8c5e00d06d3b530c82fc1152ea9f#77c9c952856a8c5e00d06d3b530c82fc1152ea9f"
 dependencies = [
  "bytes 1.1.0",
  "msg-store",
@@ -1219,7 +1219,7 @@ dependencies = [
 [[package]]
 name = "msg-store-plugin-leveldb"
 version = "0.1.0"
-source = "git+https://github.com/msg-store/msg-store-plugin-leveldb?rev=880a72edfecbf1b3fd6daaa80f1712466ae1904e#880a72edfecbf1b3fd6daaa80f1712466ae1904e"
+source = "git+https://github.com/msg-store/msg-store-plugin-leveldb?rev=ba98597f7ee4a8d93981ec2058d4e33c35f08313#ba98597f7ee4a8d93981ec2058d4e33c35f08313"
 dependencies = [
  "bincode",
  "db-key",

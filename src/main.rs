@@ -19,7 +19,6 @@ mod lib;
 
 use config::StoreConfig;
 use init::init;
-use lib::Stats;
 // use api;
 
 // pub type StoreGaurd<'a> = MutexGuard<'a, Store>;
@@ -33,7 +32,7 @@ pub struct AppData {
     pub configuration_path: Option<PathBuf>,
     pub db: Mutex<Box<dyn Db>>,
     pub file_manager: Option<Mutex<api::FileManager>>,
-    pub stats: Mutex<Stats>
+    pub stats: Mutex<api::Stats>
 }
 
 #[actix_web::main]

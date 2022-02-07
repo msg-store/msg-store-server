@@ -199,13 +199,13 @@ pub async fn handle(data: Data<AppData>, mut payload: Payload) -> Reply<ReturnBo
     for uuid in add_result.msgs_removed.into_iter() {
         {
             let mut db = lock_or_exit(&data.db);
-            if let Err(error) = db.del(uuid) {
+            if let Err(error) = db.del(uuid.clone()) {
                 error!("ERROR_CODE: 0753a0a2-5436-44e1-bb05-6e81193ad9e7. Could not remove msg from database: {}", error);
                 exit(1);
             }
         }
         if let Some(file_manager) = &data.file_manager {
-            FileManager::del(file_manager, &uuid);
+            FileManager::del(file_manager, uuid);
         }
         deleted_count += 1;
     }
@@ -217,14 +217,14 @@ pub async fn handle(data: Data<AppData>, mut payload: Payload) -> Reply<ReturnBo
     // add to file manager if needed
     if save_to_file {
         if let Some(file_manager) = &data.file_manager {
-            FileManager::add(file_manager, add_result.uuid, &msg_chunk, &mut payload).await;
+            FileManager::add(file_manager, add_result.uuid.clone(), &msg_chunk, &mut payload).await;
         } else {
             return Reply::BadRequest("File manager not present on server.".to_string());
         }
     }
     {        
         let mut db = lock_or_exit(&data.db);
-        if let Err(error) = db.add(add_result.uuid, Bytes::copy_from_slice(msg.as_bytes()), msg_byte_size) {
+        if let Err(error) = db.add(add_result.uuid.clone(), Bytes::copy_from_slice(msg.as_bytes()), msg_byte_size) {
             error!("ERROR_CODE: f106eed6-1c47-4437-b9c3-082a4c5393af. Could not add msg to database: {}", error);
             exit(1);
         }

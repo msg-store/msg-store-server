@@ -50,7 +50,7 @@ pub fn handle(data: Data<AppData>, body: Body) -> Reply<()> {
     };
     if let Some(file_manager) = &data.file_manager {
         for uuid in pruned_uuids {
-            FileManager::del(file_manager, &uuid);
+            FileManager::del(file_manager, uuid);
         }
     }    
     {

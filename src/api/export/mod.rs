@@ -21,6 +21,7 @@ use std::{
     path::PathBuf, 
     process::exit, 
     str::FromStr,
+    sync::Arc
 };
 
 // TODO: FIX: Export only exports msgs stored in the database, not the filesytem
@@ -86,13 +87,13 @@ pub fn get_info(value: &Value) -> Result<Info, String> {
 pub fn handle(data: Data<AppData>, info: Info) -> Reply<()> {
     let list = {
         let store = lock_or_exit(&data.store);
-        let list: Vec<Uuid> = if let Some(priority) = info.priority {
+        let list: Vec<Arc<Uuid>> = if let Some(priority) = info.priority {
             if let Some(group) = store.groups_map.get(&priority) {
                 group
                     .msgs_map
                     .keys()
                     .map(|uuid| uuid.clone())
-                    .collect::<Vec<Uuid>>()
+                    .collect::<Vec<Arc<Uuid>>>()
             } else {
                 vec![]
             }
@@ -109,7 +110,7 @@ pub fn handle(data: Data<AppData>, info: Info) -> Reply<()> {
                         .msgs_map
                         .keys()
                         .map(|uuid| uuid.clone())
-                        .collect::<Vec<Uuid>>(),
+                        .collect::<Vec<Arc<Uuid>>>(),
                 )
             }
             list
@@ -122,7 +123,7 @@ pub fn handle(data: Data<AppData>, info: Info) -> Reply<()> {
                         .msgs_map
                         .keys()
                         .map(|uuid| uuid.clone())
-                        .collect::<Vec<Uuid>>(),
+                        .collect::<Vec<Arc<Uuid>>>(),
                 )
             }
             list
@@ -134,7 +135,7 @@ pub fn handle(data: Data<AppData>, info: Info) -> Reply<()> {
                         .msgs_map
                         .keys()
                         .map(|uuid| uuid.clone())
-                        .collect::<Vec<Uuid>>(),
+                        .collect::<Vec<Arc<Uuid>>>(),
                 )
             }
             list
@@ -178,7 +179,7 @@ pub fn handle(data: Data<AppData>, info: Info) -> Reply<()> {
         };        
         let msg = {
             let mut db = lock_or_exit(&data.db);
-            match db.get(uuid) {
+            match db.get(uuid.clone()) {
                 Ok(msg) => msg,
                 Err(error) => {
                     error!("ERROR_CODE: 244c3834-6d38-40f4-901b-58e7444a091a. Could not get msg from database: {}", error.to_string());
@@ -211,7 +212,7 @@ pub fn handle(data: Data<AppData>, info: Info) -> Reply<()> {
         };
         {
             let mut store = lock_or_exit(&data.store);
-            if let Err(error) = store.del(&uuid) {
+            if let Err(error) = store.del(uuid.clone()) {
                 error!("ERROR_CODE: c70634e2-f090-43b1-883a-ccf8e62fbc30. Could not get mutex lock on store: {}", error.to_string());
                 exit(1);
             }
