@@ -3,11 +3,10 @@ use actix_web::{
     web::{self, Data},
     App, HttpServer,
 };
-use msg_store::{Uuid, Store};
+use msg_store::Store;
 use msg_store_db_plugin::Db;
 use env_logger::{Builder, Target};
 use std::{
-    collections::BTreeSet,
     path::PathBuf, sync::Mutex
 };
 
