@@ -10,6 +10,7 @@ pub mod ws;
 use crate::config::StoreConfig;
 use actix_web::{HttpResponse, web::Payload};
 use actix_web_actors::ws::WebsocketContext;
+use chrono::Local;
 use futures::StreamExt;
 use log::{info, error};
 use msg_store::Uuid;
@@ -21,9 +22,45 @@ use std::{
     fs::{File, remove_file, read_dir},
     io::{BufReader, Write},
     path::{Path, PathBuf}, 
-    process::exit, 
-    sync::{Arc, Mutex, MutexGuard}
+    process::exit,
+    sync::{Arc, Mutex, MutexGuard},
+    error::Error
 };
+
+pub mod error_stack {
+    use chrono::Local;
+    use log::error;
+    use std::{
+        fmt::Display,
+        error::Error
+    };
+    pub type ErrorStack = Vec<(String, String)>;
+    pub fn throw_str<T: Display + Into<String>>(error: T) -> ErrorStack {
+        let time = Local::now().to_rfc2822();
+        vec![ (time,  error.to_string())  ]
+    }
+    pub fn throw_err<E: Error>(error: E) -> ErrorStack {
+        let time = Local::now().to_rfc2822();
+        vec![ (time,  error.to_string())  ]
+    }
+    pub fn throw_errs(errors: Vec<String>) -> ErrorStack {
+        errors.into_iter().map(|error| (Local::now().to_rfc2822(), error)).collect()
+    }
+    pub fn push<T: Display + Into<String>>(mut error_stack: ErrorStack, message: T) -> ErrorStack {
+        let time = Local::now().to_rfc2822();
+        error_stack.push((time, message.to_string()));
+        error_stack
+    }
+    pub fn push_error<T: Error>(error_stack: ErrorStack, error: T) -> ErrorStack {
+        push(error_stack, error.to_string())
+    }
+    pub fn to_stderr(error_stack: &ErrorStack) {
+        error_stack.iter().for_each(|(timestamp, error)| {
+            error!("{} {}", timestamp, error)
+        });
+    }
+}
+
 
 use self::ws::Websocket;
 
@@ -173,6 +210,200 @@ impl FileManager {
     }
 }
 
+mod file_storage {
+    use actix_web::dev::Payload;
+    use futures::StreamExt;
+    use msg_store::Uuid;
+    use std::{
+        fs::{
+            create_dir_all,
+            read_dir,
+            remove_file,
+            File,
+        },
+        io::{
+            BufReader,
+            Write
+        },
+        path::{Path, PathBuf},
+        sync::Arc
+    };
+
+    use super::error_stack::{
+        throw_errs,
+        throw_str,
+        ErrorStack
+    };
+    
+    /// create a new dectory if one does not exist
+    /// returns Ok(false) if no directory was created because it already existed
+    pub fn create_directory(base_directory: &Path) -> Result<bool, ErrorStack> {
+        let mut file_storage_path = base_directory.to_path_buf();
+        file_storage_path.push("file-storage");
+        if file_storage_path.exists() {
+            match create_dir_all(file_storage_path) {
+                Ok(_) => Ok(true),
+                Err(error) => Err(throw_errs(vec![ 
+                    error.to_string(), 
+                    format!("ERROR_CODE: 18a5153f-1013-4746-b95e-f01705dc484d. Could not create directory.")
+                ]))
+            }
+        } else {
+            Ok(false)
+        }        
+    }
+
+    /// Create a the file path for a file from the file storage path
+    pub fn get_file_path_from_id(file_storage_path: &Path, uuid: &Uuid) -> PathBuf {
+        let mut file_path = file_storage_path.to_path_buf();
+        file_path.push(uuid.to_string());
+        file_path
+    }
+
+    /// reads the contents of a directory, returning a vec of uuids that it finds
+    /// 
+    /// ## Errors:
+    /// * If the the directory is not found
+    /// * If the path is not a directory
+    /// 
+    /// ## Notes
+    /// * Will ignore files that contain errors while reading, getting metadata or converting file
+    /// name to uuid
+    pub fn read_file_storage_direcotory(file_storage_path: &Path) -> Result<Vec<Arc<Uuid>>, ErrorStack> {
+        if !file_storage_path.exists() {
+            return Err(throw_str("ERROR_CODE: f47689a9-268e-464d-8ca0-8b6e2901a9d7. Directory does not exist."))
+        }
+        if !file_storage_path.is_dir() {
+            return Err(throw_str("ERROR_CODE: f79cb07b-42bf-4094-a8c2-37ec9db0417b. Path is not a directory."))
+        }
+        let uuids: Vec<Arc<Uuid>> = match read_dir(file_storage_path) {
+            Ok(read_dir) => Ok(read_dir),
+            Err(error) => {
+                Err(throw_errs(vec![
+                    error.to_string(),
+                    "ERROR_CODE: 848a8ef5-cd5e-4660-8479-8de28b7a63fd. Could not read directory".to_string()
+                ]))
+            }
+        }?.filter_map(|entry| {
+            entry.ok()
+        }).filter_map(|entry| {
+            if let Ok(metadata) = entry.metadata() {
+                Some((entry, metadata.is_file()))
+            } else {
+                None
+            }
+        }).filter_map(|(entry, is_file)| {
+            if is_file {
+                Some(entry)
+            } else {
+                None
+            }
+        }).filter_map(|entry| {
+            if let Some(file_name_string) = entry.file_name().to_str() {
+                Some(file_name_string.to_string())
+            } else {
+                None
+            }         
+        }).filter_map(|file_name| {
+            if let Ok(uuid) = Uuid::from_string(&file_name) {
+                Some(uuid)
+            } else {
+                None
+            }
+        }).collect();
+        Ok(uuids)
+    }
+
+    pub fn get_buffer(file_storage_path: &Path, uuid: &Uuid) -> Result<Option<(BufReader<File>, u64)>, ErrorStack> {
+        let uuid_string = uuid.to_string();
+        let mut file_path = file_storage_path.to_path_buf();
+        file_path.push(uuid_string);
+        let file = match File::open(file_path) {
+            Ok(file) => Ok(file),
+            Err(error) => {
+                Err(throw_errs(vec![
+                    error.to_string(),
+                    "ERROR_CODE: a041735c-5f70-4ed5-8390-ea54bf0bc4dc. Could not open file".to_string()
+                ]))
+            }
+        }?;
+        let metadata = match file.metadata() {
+            Ok(metadata) => Ok(metadata),
+            Err(error) => {
+                Err(throw_errs(vec![
+                    error.to_string(),
+                    "ERROR_CODE: 05977c96-dda2-4793-b037-00f7b51a95e7. Could not get file metadata".to_string()
+                ]))
+            }
+        }?;
+        let file_size = metadata.len();
+        let buffer = BufReader::new(file);
+        return Ok(Some((buffer, file_size)));
+    }
+
+    pub async fn write_to_disk(file_storage_path: &Path, uuid: &Uuid, first_chunk: &[u8], payload: &mut Payload) -> Result<(), ErrorStack> {
+        let file_path = get_file_path_from_id(file_storage_path, uuid);
+        let mut file = match File::create(file_path) {
+            Ok(file) => Ok(file),
+            Err(error) => {
+                Err(
+                    throw_errs(vec![
+                        error.to_string(),
+                        "ERROR_CODE:50060a93-0a50-4c83-938d-2494a5b61e18. Could not create file.".to_string()
+                    ])
+                )
+            }
+        }?;
+        if let Err(error) = file.write(first_chunk) {
+            return Err(throw_errs(vec![
+                error.to_string(),
+                "ERROR_CODE: ead714f3-9217-4d4d-bcf0-dc592421e429. Could not write to file.".to_string()]
+            ));
+        };
+        while let Some(chunk) = payload.next().await {
+            let chunk = match chunk {
+                Ok(chunk) => Ok(chunk),
+                Err(error) => {
+                    Err(throw_errs(vec![
+                        error.to_string(),
+                        "ERROR_CODE: ac566987-87f3-4a59-becc-ef6f264b826b. Could parse mutlipart field.".to_string()
+                    ]))
+                }
+            }?;
+            if let Err(error) = file.write(&chunk) {
+                return Err(throw_errs(vec![
+                    error.to_string(),
+                    "ERROR_CODE: 0e15385e-d6c5-4eee-bffa-b7fb79916424. Could not write to file.".to_string()
+                ]));
+            };
+        };
+        Ok(())
+    }
+
+    pub fn rm_from_disk(file_storage_path: &Path, uuid: &Uuid) -> Result<bool, ErrorStack> {
+        let file_path = get_file_path_from_id(file_storage_path, uuid);
+        if !file_path.exists() {
+            return Ok(false)
+        }
+        if let Err(error) = rm_from_disk_wo_check(file_storage_path, uuid) {
+            return Err(throw_str("ERROR_CODE: 22addd2d-1e08-44e1-aa60-b75384a51a3a. Could not remove file."));
+        };
+        Ok(true)
+    }
+
+    pub fn rm_from_disk_wo_check(file_storage_path: &Path, uuid: &Uuid) -> Result<(), ErrorStack> {
+        let file_path = get_file_path_from_id(file_storage_path, uuid);
+        if let Err(error) = remove_file(file_path) {
+            return Err(throw_errs(vec![
+                error.to_string(),
+                "ERROR_CODE: 675e40c1-14d7-40c3-9491-29e0c25436a1. Could not remove file.".to_string()
+            ]));
+        }
+        Ok(())
+    }
+
+}
+
 pub fn update_config(config: &StoreConfig, config_path: &Option<PathBuf>) -> Result<(), String> {
     let should_update = {
         let mut should_update = true;
@@ -236,6 +467,10 @@ pub fn from_value_prop_required<'a, T: DeserializeOwned>(
 
 pub fn get_optional_number(value: &Value, prop: &'static str) -> Result<Option<u32>, String> {
     from_value_prop::<u32, _>(value, prop, "number")
+}
+
+pub fn get_optional_string(value: &Value, prop: &'static str) -> Result<Option<String>, String> {
+    from_value_prop::<String, _>(value, prop, "string")
 }
 
 pub fn get_required_string(value: &Value, prop: &'static str) -> Result<String, String> {
