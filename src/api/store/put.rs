@@ -2,7 +2,8 @@ use crate::{
     api::{
         get_optional_max_byte_size, http_reply, update_config,
         ws::{command::STORE_PUT, Websocket},
-        ws_reply_with, Reply, lock_or_exit, http_route_hit_log, FileManager
+        ws_reply_with, Reply, lock_or_exit, http_route_hit_log,
+        lower::file_storage::rm_from_file_storage
     },
     AppData,
 };
@@ -31,8 +32,7 @@ pub fn validate_body(value: Value) -> Result<Body, Reply<()>> {
     Ok(Body { max_byte_size })
 }
 
-pub fn handle(data: Data<AppData>, body: Body) -> Reply<()> {
-    
+pub fn handle(data: Data<AppData>, body: Body) -> Reply<()> {    
     let (prune_count, pruned_uuids) = {
         let mut store = lock_or_exit(&data.store);        
         let max_byte_size = body.max_byte_size;
@@ -48,11 +48,15 @@ pub fn handle(data: Data<AppData>, body: Body) -> Reply<()> {
             }
         }
     };
-    if let Some(file_manager) = &data.file_manager {
+    if let Some(file_storage_mutex) = &data.file_storage {
+        let mut file_storage = lock_or_exit(&file_storage_mutex);
         for uuid in pruned_uuids {
-            FileManager::del(file_manager, uuid);
+            if let Err(error_code) = rm_from_file_storage(&mut file_storage, &uuid) {
+                error!("ERROR_CODE: {}", error_code);
+                exit(1);
+            }
         }
-    }    
+    }
     {
         let mut stats = lock_or_exit(&data.stats);
         stats.pruned += prune_count;

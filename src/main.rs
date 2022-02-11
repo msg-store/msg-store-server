@@ -31,7 +31,6 @@ pub struct AppData {
     pub configuration_path: Option<PathBuf>,
     pub db: Mutex<Box<dyn Db>>,
     pub file_storage: Option<Mutex<api::lower::file_storage::FileStorage>>,
-    // pub file_manager: Option<Mutex<api::FileManager>>,
     pub stats: Mutex<api::Stats>
 }
 
@@ -50,7 +49,6 @@ async fn main() -> std::io::Result<()> {
         store: init_result.store,
         db: init_result.db,
         file_storage: None, // TODO: Fix
-        // file_manager: init_result.file_manager,
         configuration_path: init_result.configuration_path,
         configuration: init_result.configuration,
         stats: init_result.stats

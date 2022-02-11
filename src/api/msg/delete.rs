@@ -2,7 +2,8 @@ use crate::{
     api::{
         get_required_uuid, http_bad_request, http_reply, validate_uuid_string,
         ws::{command::MSG_DELETE, Websocket},
-        ws_reply_with, Reply, lock_or_exit, http_route_hit_log, FileManager
+        ws_reply_with, Reply, lock_or_exit, http_route_hit_log,
+        lower::file_storage::rm_from_file_storage
     },
     AppData,
 };
@@ -44,8 +45,12 @@ pub fn handle(data: Data<AppData>, uuid: Arc<Uuid>) -> Reply<()> {
         }
     }
     {
-        if let Some(file_manager) = &data.file_manager {
-            FileManager::del(file_manager, uuid);
+        if let Some(file_storage_mutex) = &data.file_storage {
+            let mut file_storage = lock_or_exit(file_storage_mutex);
+            if let Err(error_code) = rm_from_file_storage(&mut file_storage, &uuid) {
+                error!("ERROR_CODE: {}", error_code);
+                exit(1);
+            }
         }
     }
     {

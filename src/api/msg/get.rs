@@ -6,6 +6,7 @@ use crate::{
         lock_or_exit, FileManager,
         // ws_reply_with, Reply, http_bad_request, 
         // http_route_hit_log,
+        lower::file_storage::get_buffer
     },
     AppData,
 };
@@ -178,8 +179,15 @@ pub fn handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
         }
     };
     let file_buffer = {
-        if let Some(file_manager) = &data.file_manager {
-            FileManager::get(file_manager, uuid.clone())
+        if let Some(file_storage_mutex) = &data.file_storage {
+            let mut file_storage = lock_or_exit(file_storage_mutex);
+            match get_buffer(&file_storage.path, &uuid) {
+                Ok(buffer_option) => buffer_option,
+                Err(error_code) => {
+                    error!("ERROR_CODE: {}.", error_code);
+                    exit(1);
+                }
+            }
         } else {
             None
         }
