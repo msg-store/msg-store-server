@@ -15,7 +15,10 @@ use log::error;
 use msg_store::Uuid;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::process::exit;
+use std::{
+    process::exit,
+    sync::Arc
+};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Info {
@@ -30,8 +33,8 @@ pub fn handle(data: Data<AppData>, info: Info) -> Reply<()> {
             group
                 .msgs_map
                 .keys()
-                .map(|uuid| -> Uuid { uuid.clone() })
-                .collect::<Vec<Uuid>>()
+                .map(|uuid| { uuid.clone() })
+                .collect::<Vec<Arc<Uuid>>>()
         } else {
             return Reply::Ok;
         };
@@ -41,7 +44,7 @@ pub fn handle(data: Data<AppData>, info: Info) -> Reply<()> {
     for uuid in list.iter() {
         {
             let mut store = lock_or_exit(&data.store);
-            if let Err(error) = store.del(uuid) {
+            if let Err(error) = store.del(uuid.clone()) {
                 error!("ERROR_CODE: 919e9188-e8cc-45a3-844c-ba3b4914e771. Could not delete msg from store: {}", error);
                 exit(1);
             }
@@ -54,7 +57,7 @@ pub fn handle(data: Data<AppData>, info: Info) -> Reply<()> {
             }
         }
         if let Some(file_manager) = &data.file_manager {
-            FileManager::del(file_manager, uuid);
+            FileManager::del(file_manager, uuid.clone());
         }
         deleted_count += 1;
     }

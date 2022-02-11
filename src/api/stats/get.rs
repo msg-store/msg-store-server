@@ -1,12 +1,12 @@
 use crate::{
     api::{
         http_reply,
+        Stats,
         ws::{command::STATS_GET, Websocket},
         ws_reply_with, Reply, lock_or_exit,
         http_route_hit_log
     },
-    AppData,
-    lib::Stats
+    AppData
 };
 use actix_web::{web::Data, HttpResponse};
 use actix_web_actors::ws::WebsocketContext;

@@ -6,17 +6,16 @@ use msg_store_db_plugin::{Db, Bytes};
 use msg_store_plugin_leveldb::Leveldb;
 // use serde_json::to_string_pretty;
 use std::{
-    collections::{BTreeMap,BTreeSet},
-    fs::{ create_dir_all, read_dir, remove_file },
+    collections::{BTreeMap},
+    fs::create_dir_all,
     path::PathBuf,
     process::exit,
-    sync::Mutex
+    sync::{Arc, Mutex}
 };
 
 use crate::{
-    api::FileManager,
-    config::StoreConfig,
-    lib::Stats
+    api::{FileManager, Stats},
+    config::StoreConfig
 };
 
 pub struct InitResult {
@@ -111,8 +110,8 @@ fn get_app<'a>() -> App<'a, 'a> {
 }
 
 struct MemDb {
-    msgs: BTreeMap<Uuid, Bytes>,
-    byte_size_data: BTreeMap<Uuid, u32>
+    msgs: BTreeMap<Arc<Uuid>, Bytes>,
+    byte_size_data: BTreeMap<Arc<Uuid>, u32>
 }
 impl MemDb {
     pub fn new() -> MemDb {
@@ -123,23 +122,23 @@ impl MemDb {
     }
 }
 impl Db for MemDb {
-    fn add(&mut self, uuid: Uuid, msg: Bytes, msg_byte_size: u32) -> Result<(), String> {
-        self.msgs.insert(uuid, msg);
+    fn add(&mut self, uuid: Arc<Uuid>, msg: Bytes, msg_byte_size: u32) -> Result<(), String> {
+        self.msgs.insert(uuid.clone(), msg);
         self.byte_size_data.insert(uuid, msg_byte_size);
         Ok(())
     }
-    fn get(&mut self, uuid: Uuid) -> Result<Bytes, String> {
+    fn get(&mut self, uuid: Arc<Uuid>) -> Result<Bytes, String> {
         match self.msgs.get(&uuid) {
             Some(msg) => Ok(msg.clone()),
             None => Err("msg not found".to_string())
-        }  
+        }
     }
-    fn del(&mut self, uuid: Uuid) -> Result<(), String> {
+    fn del(&mut self, uuid: Arc<Uuid>) -> Result<(), String> {
         self.msgs.remove(&uuid);
         self.byte_size_data.remove(&uuid);
         Ok(())
     }
-    fn fetch(&mut self) -> Result<Vec<(Uuid, u32)>, String> {
+    fn fetch(&mut self) -> Result<Vec<(Arc<Uuid>, u32)>, String> {
         Ok(vec![])
         // Ok(self.byte_size_data.into_iter().collect::<Vec<(Uuid, u32)>>())
     }
@@ -374,7 +373,7 @@ pub fn init() -> InitResult {
         let mut removed_uuids = vec![];
         let mut pruned_count = 0;
         for (uuid, msg_byte_size) in &msgs {
-            let mut add_result = match store.add_with_uuid(*uuid, *msg_byte_size) {
+            let mut add_result = match store.add_with_uuid(uuid.clone(), *msg_byte_size) {
                 Ok(add_result) => add_result,
                 Err(error) => {
                     // TODO: add error handling options to the configuration
@@ -383,7 +382,7 @@ pub fn init() -> InitResult {
                 }
             };
             for uuid_removed in &add_result.msgs_removed {
-                if let Err(error) = database.del(*uuid_removed) {
+                if let Err(error) = database.del(uuid_removed.clone()) {
                     error!("ERROR_CODE: 4fbc000f-4ce4-4110-ab59-15df32fd9b4d. {}", error);
                     exit(1);
                 }

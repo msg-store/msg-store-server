@@ -33,7 +33,8 @@ use std::{
     fs::File,
     pin::Pin,
     process::exit,
-    io::{BufReader, Read}
+    io::{BufReader, Read},
+    sync::Arc
 };
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -50,7 +51,7 @@ pub struct Info {
 }
 
 pub struct InnerInfo {
-    uuid: Option<Uuid>,
+    uuid: Option<Arc<Uuid>>,
     priority: Option<u32>,
     reverse: Option<bool>,
 }
@@ -168,7 +169,7 @@ pub fn handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
 
     let msg = {
         let mut db = lock_or_exit(&data.db);
-        match db.get(uuid) {
+        match db.get(uuid.clone()) {
             Ok(msg) => msg,
             Err(error) => {
                 error!("ERROR_CODE: d6dce67e-c344-492c-b3a6-8c51ae9c8eb8. Could not get msg from database: {}", error);
@@ -178,7 +179,7 @@ pub fn handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
     };
     let file_buffer = {
         if let Some(file_manager) = &data.file_manager {
-            FileManager::get(file_manager, uuid)
+            FileManager::get(file_manager, uuid.clone())
         } else {
             None
         }

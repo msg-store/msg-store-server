@@ -18,31 +18,34 @@ use log::{
 use msg_store::Uuid;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::process::exit;
+use std::{
+    process::exit,
+    sync::Arc
+};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Info {
     uuid: String,
 }
 
-pub fn handle(data: Data<AppData>, uuid: Uuid) -> Reply<()> {
+pub fn handle(data: Data<AppData>, uuid: Arc<Uuid>) -> Reply<()> {
     {
         let mut store = lock_or_exit(&data.store);
-        if let Err(error) = store.del(&uuid) {
+        if let Err(error) = store.del(uuid.clone()) {
             error!("ERROR_CODE: b2a60844-8e3b-4ca9-bccb-e13ada4fadd7. Could not remove msg from store: {}", error);
             exit(1);
         }
     }
     {
         let mut db = lock_or_exit(&data.db);
-        if let Err(error) = db.del(uuid) {
+        if let Err(error) = db.del(uuid.clone()) {
             error!("ERROR_CODE: 37897fc1-578d-45a1-824b-7b1a1519e6ef. Could not removed msg from database: {}", error);
             exit(1);
         }
     }
     {
         if let Some(file_manager) = &data.file_manager {
-            FileManager::del(file_manager, &uuid);
+            FileManager::del(file_manager, uuid);
         }
     }
     {

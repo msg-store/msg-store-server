@@ -52,13 +52,13 @@ pub fn handle(data: Data<AppData>, body: Value) -> Reply<()> {
     for uuid in msgs_removed.into_iter() {
         {
             let mut db = lock_or_exit(&data.db);
-            if let Err(error) = db.del(uuid) {
+            if let Err(error) = db.del(uuid.clone()) {
                 error!("ERROR_CODE: 34ed09d2-7d65-4709-8aba-997a42564634. Could not prune msg in database: {}", error);
                 exit(1);
             }
         }
         if let Some(file_manager) = &data.file_manager {
-            FileManager::del(file_manager, &uuid);
+            FileManager::del(file_manager, uuid);
         }
     }
     
