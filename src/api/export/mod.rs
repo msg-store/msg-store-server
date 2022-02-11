@@ -1,7 +1,19 @@
 use crate::{
     api::{
-        get_optional_number, get_optional_string, get_required_string, http_route_hit_log, format_log_complete, http_reply,
-        ws::command::EXPORT
+        get_optional_string, get_required_string, http_route_hit_log, format_log_complete, http_reply,
+        ws::command::EXPORT,
+        lower::{
+            export::{
+                get_export_destination_directory,
+                create_export_directory
+            },
+            file_storage::{
+                create_directory,
+                get_file_path_from_id,
+                rm_from_file_storage
+            },
+            lock
+        }
     },
     AppData,
 };
@@ -23,12 +35,10 @@ use std::{
     str::FromStr
 };
 
-// TODO: FIX: Export only exports msgs stored in the database, not the filesytem
-
 use super::{
-    append_null, prepend_data_str,
+    prepend_data_str,
     ws::Websocket,
-    ws_reply_with, Reply, lock_or_exit, FileManager,
+    ws_reply_with, Reply, lock_or_exit
 };
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -88,30 +98,20 @@ pub fn handle(data: Data<AppData>, info: Info) -> Reply<()> {
         let mut deleted_count = 0;
         if database == "mem" {
             // convert output directory to pathbuf
-            let dir_path = match PathBuf::from_str(&info.output_directory) {
-                Ok(dir_path) => dir_path,
+            let export_directory = match PathBuf::from_str(&info.output_directory) {
+                Ok(dir_path) => get_export_destination_directory(&dir_path),
                 Err(error) => {
                     error!("ERROR_CODE: ab65abce-5a25-415b-991a-7a540242d185. Could not parse file path: {}", error.to_string());
                     exit(1);
                 }
             };
-            // get the default file name
-            let mut file_path = dir_path.to_path_buf();
-            file_path.push("msg-store-backup.txt");
-            // check if it exits
-            if file_path.exists() {
-                // if it exists, then append a number to the path and check if it too exits.
-                // repeat until a non-existing path is found
-                let mut count = 1;
-                loop {
-                    file_path = dir_path.to_path_buf();
-                    file_path.push(format!("msg-store-backup-{}.txt", count));
-                    if !file_path.exists() {
-                        break;
-                    }
-                    count += 1;
-                }
+            if let Err(error_code) = create_export_directory(&export_directory) {
+                error!("ERROR_CODE: {}.", error_code);
+                exit(1);
             }
+            let mut file_path = export_directory;
+            // get the default file name
+            file_path.push("msg-store-backup.txt");
             // open the file
             let mut file = match OpenOptions::new()
                 .append(true)
@@ -201,44 +201,14 @@ pub fn handle(data: Data<AppData>, info: Info) -> Reply<()> {
         } else if database == "leveldb" {
             // convert the string into a pathbuf
             let export_dir_path = match PathBuf::from_str(&info.output_directory) {
-                Ok(export_path) => export_path,
+                Ok(export_path) => get_export_destination_directory(&export_path),
                 Err(error) => {
                     return Reply::BadRequest(format!("The export path give could not be derived: {}", error.to_string()))
                 }
             };
-            // create a new path
-            let mut backup_path = export_dir_path.to_path_buf();
-            backup_path.push("msg-store-backup");
-            // open a new file manager for the backup if one already exists on the server
-            // this is so that we can we its boilerplate code for setting up the directory
-            let file_manager_backup = {
-                // check if the one currently exits
-                if data.file_manager.is_some() {
-                    // create a new one
-                    let mut file_storage_backup_path = backup_path.to_path_buf();
-                    file_storage_backup_path.push("file-storage");
-                    Some(FileManager::new(&file_storage_backup_path))
-                } else {
-                    // do not create one
-                    None
-                }
-            };
-            // check if the path exists
-            if backup_path.exists() {
-                // if it exists, then append a number to the path and check if it too exits.
-                // repeat until a non-existing path is found
-                let mut count = 1;
-                loop {
-                    backup_path = export_dir_path.to_path_buf();
-                    backup_path.push(format!("msg-store-backup-{}", count));
-                    if !backup_path.exists() {
-                        break;
-                    }
-                    count += 1;
-                }
-            }
+
             // get the leveldb path
-            let mut leveldb_path = backup_path.to_path_buf();
+            let mut leveldb_path = export_dir_path.to_path_buf();
             leveldb_path.push("leveldb");
             // open the leveldb instance
             let mut leveldb_backup = match Leveldb::new(&leveldb_path) {
@@ -248,85 +218,114 @@ pub fn handle(data: Data<AppData>, info: Info) -> Reply<()> {
                     exit(1);
                 }
             };
-            for _ in 0..max_count {
-                let store = lock_or_exit(&data.store);
-                let mut leveldb = lock_or_exit(&data.db);
-                let uuid = match store.get(None, None, false) {
-                    Ok(uuid) => uuid,
-                    Err(error) => {
-                        error!("ERROR_CODE: 02a2de7e-7c96-4afb-b0ca-44b04eefafe2. Could not get uuid from store: {}", error.to_string());
-                        exit(1);
-                    }
-                };
-                let uuid = match uuid {
-                    Some(uuid) => uuid,
-                    None => { break }
-                };
-                let msg = match leveldb.get(uuid.clone()) {
-                    Ok(msg) => msg,
-                    Err(error) => {
-                        error!("ERROR_CODE: af2077be-050b-4e9c-9dbe-457c789115c1. Could not get msg from database: {}", error);
-                        exit(1);
-                    }
-                };                
-                let msg_byte_size = msg.len() as u32;
 
-                // file storage section
-                let mut src_file_path: Option<PathBuf> = None;
-                let mut dest_file_path: Option<PathBuf> = None;
-                // check if a file manager exists
-                // TODO: Optimise to remove this check in every loop iteration
-                if let Some(file_manager) = &data.file_manager {
-                    {
-                        let file_manager = lock_or_exit(&file_manager);
-                        // check to see if the message is a file by looking up the file manager index
-                        if file_manager.file_list.contains(&uuid) {
-                            // recheck if the filemanager backup exists
-                            // TODO: Optimise to remove this recheck in every loop iteration
-                            if let Some(file_manager_backup) = &file_manager_backup {
-                                // get the src file path
-                                let mut file_path = file_manager.file_storage_path.to_path_buf();
-                                file_path.push(uuid.clone().to_string());
-                                // get the dest file path
-                                let mut new_file_path = file_manager_backup.file_storage_path.to_path_buf();
-                                new_file_path.push(uuid.clone().to_string());
-                                // copy the contents
-                                if let Err(error) = copy(&file_path, &new_file_path) {
-                                    error!("ERROR_CODE: b5e42ab3-1530-49ce-b724-86f288e0b36a. Could not make backup copy of file: {}", error.to_string());
-                                    exit(1);
-                                };
-                                // keep the file paths onhand incase it needs to be reverted after an error
-                                src_file_path = Some(file_path);
-                                dest_file_path = Some(new_file_path);
-                            } else {
-                                error!("ERROR_CODE: f32ebe39-11a8-47f6-976d-753c436e0fba. Could not find file manager backup.");
-                                exit(1)
-                            }
-                        }
-                    }
-                    // remove the file from the index
-                    FileManager::del(file_manager, uuid.clone())
-                }
-                // add the data to the leveldb backup
-                // if it errors then copy the destination file back to the source
-                // dont exit until on error handling has finished
-                if let Err(error) = leveldb_backup.add(uuid, msg, msg_byte_size) {
-                    error!("ERROR_CODE: 86fccd47-c4b9-4516-b292-dd1261213910. Could not add msg to backup: {}", error);
-                    if let Some(src_file_path) = src_file_path {
-                        if let Some(dest_file_path) = dest_file_path {
-                            if let Err(error) = copy(&dest_file_path, &src_file_path) {
-                                error!("ERROR_CODE: 7b3b3493-620e-4a73-9d58-622cef9ea714. Could not revert fs changes: {}", error.to_string());
-                            };
-                            if let Err(error) = remove_file(dest_file_path) {
-                                error!("ERROR_CODE: 78c08983-ff20-4cfe-9420-489334406ca6. Could not remove destination file after error: {}", error.to_string());
-                            }
-                        }
-                    }
+            if let Some(file_storage_mutex) = &data.file_storage {
+
+                // create file storage directory
+                if let Err(error_code) = create_directory(&export_dir_path) {
+                    error!("ERROR_CODE: {}.", error_code);
                     exit(1);
                 }
-                // update deleted count
-                deleted_count += 1;
+                let file_storage_export_directory = match create_directory(&export_dir_path) {
+                    Ok(directory) => directory,
+                    Err(error_code) => {
+                        error!("ERROR_CODE: {}.", error_code);
+                        exit(1);
+                    }
+                };
 
+                for _ in 0..max_count {
+                    let store = lock_or_exit(&data.store);
+                    let mut leveldb = lock_or_exit(&data.db);
+                    let mut file_storage = match lock(&file_storage_mutex) {
+                        Ok(file_storage) => file_storage,
+                        Err(error_code) => {
+                            error!("ERROR_CODE: {}.", error_code);
+                            exit(1);
+                        }
+                    };
+                    let uuid = match store.get(None, None, false) {
+                        Ok(uuid) => uuid,
+                        Err(error) => {
+                            error!("ERROR_CODE: 02a2de7e-7c96-4afb-b0ca-44b04eefafe2. Could not get uuid from store: {}", error.to_string());
+                            exit(1);
+                        }
+                    };
+                    let uuid = match uuid {
+                        Some(uuid) => uuid,
+                        None => { break }
+                    };
+                    let msg = match leveldb.get(uuid.clone()) {
+                        Ok(msg) => msg,
+                        Err(error) => {
+                            error!("ERROR_CODE: af2077be-050b-4e9c-9dbe-457c789115c1. Could not get msg from database: {}", error);
+                            exit(1);
+                        }
+                    };                
+                    let msg_byte_size = msg.len() as u32;
+    
+                    let mut src_file_path = get_file_path_from_id(&file_storage.path, &uuid);
+                    let mut dest_file_path = get_file_path_from_id(&file_storage_export_directory, &uuid);
+                    if let Err(error) = copy(&src_file_path, &dest_file_path) {
+                        error!("ERROR_CODE: b5e42ab3-1530-49ce-b724-86f288e0b36a. Could not make backup copy of file: {}", error.to_string());
+                        exit(1);
+                    };
+                    // remove the file from the index
+                    if let Err(error_code) = rm_from_file_storage(&mut file_storage, &uuid) {
+                        error!("ERROR_CODE: {}.", error_code);
+                        exit(1);
+                    }
+
+                    // add the data to the leveldb backup
+                    // if it errors then copy the destination file back to the source
+                    // dont exit until on error handling has finished
+                    if let Err(error) = leveldb_backup.add(uuid, msg, msg_byte_size) {
+                        error!("ERROR_CODE: 86fccd47-c4b9-4516-b292-dd1261213910. Could not add msg to backup: {}", error);
+                        if let Err(error) = copy(&dest_file_path, &src_file_path) {
+                            error!("ERROR_CODE: 7b3b3493-620e-4a73-9d58-622cef9ea714. Could not revert fs changes: {}", error.to_string());
+                        };
+                        if let Err(error) = remove_file(dest_file_path) {
+                            error!("ERROR_CODE: 78c08983-ff20-4cfe-9420-489334406ca6. Could not remove destination file after error: {}", error.to_string());
+                        }
+                        exit(1);
+                    }
+                    // update deleted count
+                    deleted_count += 1;    
+                }
+            } else {
+                for _ in 0..max_count {
+                    let store = lock_or_exit(&data.store);
+                    let mut leveldb = lock_or_exit(&data.db);
+                    let uuid = match store.get(None, None, false) {
+                        Ok(uuid) => uuid,
+                        Err(error) => {
+                            error!("ERROR_CODE: 02a2de7e-7c96-4afb-b0ca-44b04eefafe2. Could not get uuid from store: {}", error.to_string());
+                            exit(1);
+                        }
+                    };
+                    let uuid = match uuid {
+                        Some(uuid) => uuid,
+                        None => { break }
+                    };
+                    let msg = match leveldb.get(uuid.clone()) {
+                        Ok(msg) => msg,
+                        Err(error) => {
+                            error!("ERROR_CODE: af2077be-050b-4e9c-9dbe-457c789115c1. Could not get msg from database: {}", error);
+                            exit(1);
+                        }
+                    };                
+                    let msg_byte_size = msg.len() as u32;
+
+                    // add the data to the leveldb backup
+                    // if it errors then copy the destination file back to the source
+                    // dont exit until on error handling has finished
+                    if let Err(error) = leveldb_backup.add(uuid, msg, msg_byte_size) {
+                        error!("ERROR_CODE: 86fccd47-c4b9-4516-b292-dd1261213910. Could not add msg to backup: {}", error);
+                        exit(1);
+                    }
+                    // update deleted count
+                    deleted_count += 1;    
+                }
             }
         } else {
             error!("ERROR_CODE: eae7b453-9532-47b0-b73b-01af6e4dddfc. Could not get database option.");
