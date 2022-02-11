@@ -8,10 +8,8 @@ pub mod ws;
 pub mod lower;
 
 use crate::config::StoreConfig;
-use actix_web::{HttpResponse, web::Payload};
+use actix_web::HttpResponse;
 use actix_web_actors::ws::WebsocketContext;
-use chrono::Local;
-use futures::StreamExt;
 use log::{info, error};
 use msg_store::Uuid;
 use serde::{de::DeserializeOwned, Serialize};
@@ -19,12 +17,10 @@ use serde_json::{from_value, json, to_string, Value};
 use std::{
     collections::BTreeSet,
     fmt::Display, 
-    fs::{File, remove_file, read_dir},
-    io::{BufReader, Write},
+    fs::{remove_file, read_dir},
     path::{Path, PathBuf}, 
     process::exit,
-    sync::{Arc, Mutex, MutexGuard},
-    error::Error
+    sync::{Arc, Mutex, MutexGuard}
 };
 
 use self::ws::Websocket;
@@ -89,75 +85,6 @@ impl FileManager {
             file_manager.file_list.insert(uuid);
         }
         file_manager
-    }
-    pub async fn add(file_manager: &Mutex<Self>, uuid: Arc<Uuid>, msg_chunk: &[u8], payload: &mut Payload) {
-        let mut file_manager: MutexGuard<Self> = lock_or_exit(&file_manager);
-        file_manager.file_list.insert(uuid.clone());
-        let mut file_path = file_manager.file_storage_path.clone();
-        file_path.push(uuid.to_string());
-        let mut file = match File::create(file_path) {
-            Ok(file) => file,
-            Err(error) => {
-                error!("ERROR_CODE: 0df10fb3-058f-4e4c-936e-ab8d8f2865e1. Could not create file: {}", error);
-                exit(1);
-            }
-        };
-        if let Err(error) = file.write(&msg_chunk.to_vec()) {
-            error!("ERROR_CODE: ead714f3-9217-4d4d-bcf0-dc592421e429. Could not write to file: {}", error);
-            exit(1);
-        };
-        while let Some(chunk) = payload.next().await {
-            let chunk = match chunk {
-                Ok(chunk) => chunk,
-                Err(error) => {
-                    error!("ERROR_CODE: ac566987-87f3-4a59-becc-ef6f264b826b. Could parse mutlipart field: {}", error.to_string());
-                    exit(1);
-                }
-            };
-            if let Err(error) = file.write(&chunk) {
-                error!("ERROR_CODE: 0e15385e-d6c5-4eee-bffa-b7fb79916424. Could not write to file: {}", error);
-                exit(1);
-            };
-        }
-    }
-    pub fn get(file_manager: &Mutex<Self>, uuid: Arc<Uuid>) -> Option<(BufReader<File>, u64)> {
-        let file_manager = lock_or_exit(&file_manager);
-        if !file_manager.file_list.contains(&uuid) {
-            return None;
-        }
-        let uuid_string = uuid.to_string();
-        let mut file_path = file_manager.file_storage_path.to_path_buf();
-        file_path.push(uuid_string);
-        let file = match File::open(file_path) {
-            Ok(file) => file,
-            Err(error) => {
-                error!("ERROR_CODE: dbd85446-e866-4cf1-ad00-b15d2a3e9034. Could not open file: {}", error.to_string());
-                exit(1);
-            }
-        };
-        let metadata = match file.metadata() {
-            Ok(metadata) => metadata,
-            Err(error) => {
-                error!("ERROR_CODE: ed6dcc3d-ed0d-4e0d-8955-85c7050a373b. Could not get file metadata: {}", error);
-                exit(1)
-            }
-        };
-        let file_size = metadata.len();
-        let buffer = BufReader::new(file);
-        return Some((buffer, file_size));
-    }
-    pub fn del(file_manager: &Mutex<Self>, uuid: Arc<Uuid>)  {
-        let mut file_manager = lock_or_exit(&file_manager);
-        if !file_manager.file_list.remove(&uuid) {
-            return;
-        }
-        let uuid_string = uuid.to_string();
-        let mut file_path = file_manager.file_storage_path.to_path_buf();
-        file_path.push(uuid_string);
-        if let Err(error) = remove_file(file_path) {
-            error!("ERROR_CODE: 675e40c1-14d7-40c3-9491-29e0c25436a1. Could not remove file: {}", error.to_string());
-            exit(1);
-        }
     }
     pub fn del_batch(&mut self, uuids: Vec<Arc<Uuid>>)  {
         for uuid in uuids {

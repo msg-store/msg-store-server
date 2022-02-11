@@ -3,7 +3,7 @@ use crate::{
         // from_value_prop, get_optional_priority, get_optional_uuid, http_reply,
         validate_uuid_string,
         // ws::{command::MSG_GET, Websocket},
-        lock_or_exit, FileManager,
+        lock_or_exit,
         // ws_reply_with, Reply, http_bad_request, 
         // http_route_hit_log,
         lower::file_storage::get_buffer
@@ -180,7 +180,7 @@ pub fn handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
     };
     let file_buffer = {
         if let Some(file_storage_mutex) = &data.file_storage {
-            let mut file_storage = lock_or_exit(file_storage_mutex);
+            let file_storage = lock_or_exit(file_storage_mutex);
             match get_buffer(&file_storage.path, &uuid) {
                 Ok(buffer_option) => buffer_option,
                 Err(error_code) => {

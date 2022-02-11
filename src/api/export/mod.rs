@@ -264,8 +264,8 @@ pub fn handle(data: Data<AppData>, info: Info) -> Reply<()> {
                     };                
                     let msg_byte_size = msg.len() as u32;
     
-                    let mut src_file_path = get_file_path_from_id(&file_storage.path, &uuid);
-                    let mut dest_file_path = get_file_path_from_id(&file_storage_export_directory, &uuid);
+                    let src_file_path = get_file_path_from_id(&file_storage.path, &uuid);
+                    let dest_file_path = get_file_path_from_id(&file_storage_export_directory, &uuid);
                     if let Err(error) = copy(&src_file_path, &dest_file_path) {
                         error!("ERROR_CODE: b5e42ab3-1530-49ce-b724-86f288e0b36a. Could not make backup copy of file: {}", error.to_string());
                         exit(1);

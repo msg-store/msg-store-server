@@ -2,11 +2,8 @@ use crate::{
     api::{
         from_value_prop_required, http_reply,
         ws::{command::GROUP_DELETE, Websocket},
-        ws_reply_with, Reply, lock_or_exit, http_route_hit_log, FileManager,
-        lower::{
-            lock,
-            file_storage::rm_from_file_storage
-        }
+        ws_reply_with, Reply, lock_or_exit, http_route_hit_log,
+        lower::file_storage::rm_from_file_storage
     },
     AppData,
 };
