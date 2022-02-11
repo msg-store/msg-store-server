@@ -2,7 +2,11 @@ use crate::{
     api::{
         from_value_prop_required, http_reply,
         ws::{command::GROUP_DELETE, Websocket},
-        ws_reply_with, Reply, lock_or_exit, http_route_hit_log, FileManager
+        ws_reply_with, Reply, lock_or_exit, http_route_hit_log, FileManager,
+        lower::{
+            lock,
+            file_storage::rm_from_file_storage
+        }
     },
     AppData,
 };
@@ -56,8 +60,12 @@ pub fn handle(data: Data<AppData>, info: Info) -> Reply<()> {
                 exit(1);
             }
         }
-        if let Some(file_manager) = &data.file_manager {
-            FileManager::del(file_manager, uuid.clone());
+        if let Some(file_storage_mutex) = &data.file_storage {
+            let mut file_storage = lock_or_exit(file_storage_mutex);
+            if let Err(error_code) = rm_from_file_storage(&mut file_storage, uuid) {
+                error!("ERROR_CODE: {}", error_code);
+                exit(1);
+            }
         }
         deleted_count += 1;
     }
