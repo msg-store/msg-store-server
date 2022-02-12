@@ -20,9 +20,7 @@ pub struct Body {
     msg: String,
 }
 
-pub trait Chunky: Stream<Item=Result<Bytes, &'static str>> + Unpin {
-
-}
+pub trait Chunky: Stream<Item=Result<Bytes, &'static str>> + Unpin { }
 
 pub async fn handle<T: Chunky>(
     store: &Mutex<Store>,
