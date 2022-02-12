@@ -1,17 +1,8 @@
-use crate::{
-    api::{
-        http_route_hit_log,
-        lower::{
-            error_codes,
-            msg::add::handle
-        }
-    },
-    AppData,
-};
-use actix_web::{
-    web::{ Data,Payload },
-    HttpResponse,
-};
+use crate::AppData;
+use crate::api::lower::error_codes;
+use crate::api::lower::msg::add::handle;
+use actix_web::web::{ Data,Payload };
+use actix_web::HttpResponse;
 use log::info;
 use serde::{Deserialize, Serialize};
 use std::process::exit;
@@ -42,7 +33,7 @@ const STATUS_409: &'static [&'static str] = &[
 
 const ROUTE: &'static str = "POST /api/msg";
 pub async fn http_handle(data: Data<AppData>, body: Payload) -> HttpResponse {
-    http_route_hit_log::<()>(ROUTE, None);
+    info!("{}", ROUTE);
     match handle(&data.store, &data.file_storage, &data.stats, &data.db, &mut body.into_inner()).await {
         Ok(uuid) => HttpResponse::Ok().json(ReturnBody { uuid: uuid.to_string() }),
         Err(error_code) => {

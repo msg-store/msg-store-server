@@ -1,36 +1,14 @@
-use crate::{
-    api::{
-        lower::{
-            lock,
-            error_codes::{self, log_err},
-            file_storage::get_buffer,
-            Database,
-            file_storage::{
-                FileStorage
-            },
-            Either
-        }
-    }
-};
-use actix_web::{
-    web::Bytes,
-    Error
-};
-use futures::{
-    stream::Stream,
-    task::{Context, Poll}
-};
-use log::{
-    error
-};
+use bytes::Bytes;
+use crate::api::lower::{lock, Database, Either};
+use crate::api::lower::error_codes::{self, log_err};
+use crate::api::lower::file_storage::{get_buffer, FileStorage};
+use futures::stream::Stream;
+use futures::task::{Context, Poll};
 use msg_store::{Uuid, Store};
-use std::{
-    fs::File,
-    pin::Pin,
-    process::exit,
-    io::{BufReader, Read},
-    sync::{Arc, Mutex}
-};
+use std::fs::File;
+use std::pin::Pin;
+use std::io::{BufReader, Read};
+use std::sync::{Arc, Mutex};
 
 pub struct ReturnBody {
     pub header: String,
@@ -53,12 +31,11 @@ impl ReturnBody {
     }
 }
 impl Stream for ReturnBody {
-    type Item = Result<Bytes, Error>;
+    type Item = Result<Bytes, &'static str>;
     fn poll_next(
         mut self: Pin<&mut Self>, 
         _cx: &mut Context<'_>
     ) -> Poll<Option<Self::Item>> {
-        // debug!("poll called");
         if self.msg_sent {
             return Poll::Ready(None);
         }
@@ -66,13 +43,10 @@ impl Stream for ReturnBody {
             let limit = self.file_size - self.bytes_read;
             if limit >= 665600 {
                 let mut buffer = [0; 665600];
-                let _bytes_read = match self.msg.read(&mut buffer) {
-                    Ok(bytes_read) => bytes_read,
-                    Err(error) => {
-                        error!("ERROR_CODE: 980e2389-d8d4-448a-b60e-cb007f755d0b. Could not read to buffer: {}", error.to_string());
-                        exit(1)
-                    }
-                };
+                if let Err(error) = self.msg.read(&mut buffer) {
+                    error_codes::log_err(error_codes::COULD_NOT_READ_BUFFER, file!(), line!(), error.to_string());
+                    return Poll::Ready(Some(Err(error_codes::COULD_NOT_READ_BUFFER)));
+                }
                 {
                     let mut body = self.as_mut().get_mut();
                     body.bytes_read += 665600;
@@ -83,8 +57,8 @@ impl Stream for ReturnBody {
             } else {
                 let mut buffer = Vec::with_capacity(limit as usize);
                 if let Err(error) = self.msg.read_to_end(&mut buffer) {
-                    error!("ERROR_CODE: e2865655-31f6-486f-8b8b-a360a506eb76. Could not read to buffer: {}", error.to_string());
-                    exit(1)
+                    error_codes::log_err(error_codes::COULD_NOT_READ_BUFFER, file!(), line!(), error.to_string());
+                    return Poll::Ready(Some(Err(error_codes::COULD_NOT_READ_BUFFER)));
                 };
                 {
                     let mut body = self.as_mut().get_mut();

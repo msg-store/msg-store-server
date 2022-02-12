@@ -1,17 +1,8 @@
-use crate::{
-    api::{
-        http_route_hit_log,
-        lower::{
-            error_codes,
-            msg::rm::handle
-        }
-    },
-    AppData,
-};
-use actix_web::{
-    web::{Data, Query},
-    HttpResponse,
-};
+use crate::AppData;
+use crate::api::lower::msg::rm::handle;
+use crate::api::lower::error_codes;
+use actix_web::web::{Data, Query};
+use actix_web::HttpResponse;
 use log::info;
 use msg_store::Uuid;
 use serde::{Deserialize, Serialize};
@@ -24,7 +15,6 @@ pub struct Info {
 
 const ROUTE: &'static str = "DEL /api/msg";
 pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
-    http_route_hit_log(ROUTE, Some(info.clone()));
     info!("{}", ROUTE);
     let uuid = match Uuid::from_string(&info.uuid) {
         Ok(uuid) => uuid,

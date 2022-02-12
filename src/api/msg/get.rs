@@ -1,38 +1,16 @@
-use crate::{
-    api::{
-        http_route_hit_log,
-        lower::{
-            error_codes,
-            msg::get::handle,
-            Either
-        }
-    },
-    AppData,
-};
-use actix_web::{
-    web::{
-        Data, Query, Bytes, 
-        // BytesMut
-    },
-    HttpResponse,
-    Error
-};
-use futures::{
-    stream::Stream,
-    task::{Context, Poll}
-};
-use log::{
-    error,
-    info
-};
+use crate::AppData;
+use crate::api::lower::error_codes;
+use crate::api::lower::msg::get::{handle, ReturnBody as ApiReturn};
+use crate::api::lower::Either;
+use actix_web::{ HttpResponse, Error };
+use actix_web::web::{ Data, Query, Bytes };
+use futures::stream::{Stream, StreamExt};
+use futures::task::{Context, Poll};
+use log::info;
 use msg_store::Uuid;
 use serde::{Deserialize, Serialize};
-use std::{
-    fs::File,
-    pin::Pin,
-    process::exit,
-    io::{BufReader, Read}
-};
+use std::pin::Pin;
+use std::process::exit;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct MsgData {
@@ -48,22 +26,12 @@ pub struct Info {
 }
 
 pub struct ReturnBody {
-    header: String,
-    msg: BufReader<File>,
-    file_size: u64,
-    bytes_read: u64,
-    headers_sent: bool,
-    msg_sent: bool
+    stream: ApiReturn
 }
 impl ReturnBody {
-    pub fn new(header: String, file_size: u64, msg: BufReader<File>) -> ReturnBody {
+    pub fn new(stream: ApiReturn) -> ReturnBody {
         ReturnBody {
-            header,
-            file_size,
-            bytes_read: 0,
-            msg,
-            headers_sent: false,
-            msg_sent: false
+            stream
         }
     }
 }
@@ -71,59 +39,34 @@ impl Stream for ReturnBody {
     type Item = Result<Bytes, Error>;
     fn poll_next(
         mut self: Pin<&mut Self>, 
-        _cx: &mut Context<'_>
+        cx: &mut Context<'_>
     ) -> Poll<Option<Self::Item>> {
-        // debug!("poll called");
-        if self.msg_sent {
-            return Poll::Ready(None);
-        }
-        if self.headers_sent {            
-            let limit = self.file_size - self.bytes_read;
-            if limit >= 665600 {
-                let mut buffer = [0; 665600];
-                let _bytes_read = match self.msg.read(&mut buffer) {
-                    Ok(bytes_read) => bytes_read,
-                    Err(error) => {
-                        error!("ERROR_CODE: 980e2389-d8d4-448a-b60e-cb007f755d0b. Could not read to buffer: {}", error.to_string());
-                        exit(1)
-                    }
-                };
-                {
-                    let mut body = self.as_mut().get_mut();
-                    body.bytes_read += 665600;
-                }
-                return Poll::Ready(Some(Ok(Bytes::copy_from_slice(&buffer))));
-            } else if limit == 0 {
-                return Poll::Ready(None);
-            } else {
-                let mut buffer = Vec::with_capacity(limit as usize);
-                if let Err(error) = self.msg.read_to_end(&mut buffer) {
-                    error!("ERROR_CODE: e2865655-31f6-486f-8b8b-a360a506eb76. Could not read to buffer: {}", error.to_string());
-                    exit(1)
-                };
-                {
-                    let mut body = self.as_mut().get_mut();
-                    body.msg_sent = true;
-                }
-                return Poll::Ready(Some(Ok(Bytes::copy_from_slice(&buffer))));
+        let chunk_option = match self.stream.poll_next_unpin(cx) {
+            Poll::Ready(chunk_option) => chunk_option,
+            Poll::Pending => { return Poll::Pending }
+        };
+        let chunk_result = match chunk_option {
+            Some(chunk_result) => chunk_result,
+            None => return Poll::Ready(None)
+        };
+        match chunk_result {
+            Ok(bytes) => Poll::Ready(Some(Ok(Bytes::copy_from_slice(&bytes)))),
+            Err(error_code) => {
+                error_codes::log_err(error_code, file!(), line!(), "");
+                Poll::Ready(Some(Err(Error::from(()))))
             }
-        } else {
-            {
-                let mut body = self.as_mut().get_mut();
-                body.headers_sent = true;
-            }
-            Poll::Ready(Some(Ok(Bytes::copy_from_slice(&self.header.as_bytes()))))
         }
     }
 }
 
 const ROUTE: &'static str = "GET /api/msg";
 pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
-    http_route_hit_log(ROUTE, Some(info.clone()));
+    info!("{}", ROUTE);
     let uuid = if let Some(uuid_string) = &info.uuid {
         match Uuid::from_string(&uuid_string) {
             Ok(uuid) => Some(uuid),
             Err(_) => {
+                
                 info!("{} 400 {}", ROUTE, error_codes::INVALID_UUID);
                 return HttpResponse::BadRequest().body(error_codes::INVALID_UUID);
             } 
@@ -165,5 +108,5 @@ pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
         }
     };
     info!("{} 200 {}", ROUTE, buffer.header);
-    HttpResponse::Ok().streaming(buffer)
+    HttpResponse::Ok().streaming(ReturnBody::new(buffer))
 }
