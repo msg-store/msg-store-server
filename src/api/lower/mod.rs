@@ -9,6 +9,7 @@ use std::{
 pub mod export;
 pub mod file_storage;
 pub mod group;
+pub mod group_defaults;
 pub mod msg;
 
 pub mod error_codes {
@@ -32,6 +33,7 @@ pub mod error_codes {
     pub const DATABASE_ERROR: Str = "DATABASE_ERROR";
     pub const COULD_NOT_LOCK_ITEM: Str = "COULD_NOT_LOCK_ITEM";
     pub const COULD_NOT_FIND_FILE_STORAGE: Str = "COULD_NOT_FIND_FILE_STORAGE";
+    pub const COULD_NOT_UPDATE_CONFIGURATION: Str = "COULD_NOT_UPDATE_CONFIGURATION";
 
     /// Non-Fatal Errors
     pub const COULD_NOT_GET_CHUNK_FROM_PAYLOAD: Str = "COULD_NOT_GET_CHUNK_FROM_PAYLOAD";
