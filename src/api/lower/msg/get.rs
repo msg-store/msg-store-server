@@ -10,13 +10,10 @@ use crate::{
             },
             Either
         }
-    },
-    AppData,
+    }
 };
 use actix_web::{
-    web::{
-        Data, Bytes, 
-    },
+    web::Bytes,
     Error
 };
 use futures::{
@@ -36,12 +33,12 @@ use std::{
 };
 
 pub struct ReturnBody {
-    header: String,
-    msg: BufReader<File>,
-    file_size: u64,
-    bytes_read: u64,
-    headers_sent: bool,
-    msg_sent: bool
+    pub header: String,
+    pub msg: BufReader<File>,
+    pub file_size: u64,
+    pub bytes_read: u64,
+    pub headers_sent: bool,
+    pub msg_sent: bool
 }
 impl ReturnBody {
     pub fn new(header: String, file_size: u64, msg: BufReader<File>) -> ReturnBody {
@@ -136,30 +133,35 @@ pub fn handle(
             }
         }
     }?;
-    let file_buffer = {
-        if let Some(file_storage_mutex) = &file_storage_option {
-            let file_storage = lock(file_storage_mutex)?;
-            match get_buffer(&file_storage.path, &uuid) {
+    if let Some(file_storage_mutex) = &file_storage_option {
+        let file_storage = lock(file_storage_mutex)?;
+        if file_storage.index.contains(&uuid) {
+            let (file_buffer, file_size) = match get_buffer(&file_storage.path, &uuid) {
                 Ok(buffer_option) => Ok(buffer_option),
                 Err(error_code) => {
                     log_err(error_code, file!(), line!(), "");
                     Err(error_code)
                 }
-            }?
+            }?;
+            let msg_header = match String::from_utf8(msg.to_vec()) {
+                Ok(msg_header) => Ok(msg_header),
+                Err(error) => {
+                    log_err(error_codes::COULD_NOT_PARSE_CHUNK, file!(), line!(), error.to_string());
+                    Err(error_codes::COULD_NOT_PARSE_CHUNK)
+                }
+            }?;
+            let body = ReturnBody::new(format!("uuid={}&{}?", uuid.to_string(), msg_header), file_size, file_buffer);
+            Ok(Some(Either::A(body)))
         } else {
-            None
+            let msg = match String::from_utf8(msg.to_vec()) {
+                Ok(msg) => Ok(msg),
+                Err(error) => {
+                    log_err(error_codes::COULD_NOT_PARSE_CHUNK, file!(), line!(), error.to_string());
+                    Err(error_codes::COULD_NOT_PARSE_CHUNK)
+                }
+            }?;
+            Ok(Some(Either::B(format!("uuid={}?{}", uuid.to_string(), msg))))
         }
-    };
-    if let Some((file_buffer, file_size)) = file_buffer {
-        let msg_header = match String::from_utf8(msg.to_vec()) {
-            Ok(msg_header) => Ok(msg_header),
-            Err(error) => {
-                log_err(error_codes::COULD_NOT_PARSE_CHUNK, file!(), line!(), error.to_string());
-                Err(error_codes::COULD_NOT_PARSE_CHUNK)
-            }
-        }?;
-        let body = ReturnBody::new(format!("uuid={}&{}?", uuid.to_string(), msg_header), file_size, file_buffer);
-        Ok(Some(Either::A(body)))
     } else {
         let msg = match String::from_utf8(msg.to_vec()) {
             Ok(msg) => Ok(msg),

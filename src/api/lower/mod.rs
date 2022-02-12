@@ -88,6 +88,9 @@ pub mod error_codes {
 }
 
 pub mod stats {
+    use serde::Serialize;
+
+    #[derive(Serialize, Clone, Copy)]
     pub struct Stats {
         pub inserted: u32,
         pub deleted: u32,

@@ -1,10 +1,10 @@
 use crate::{
     api::{
-        get_required_uuid, http_bad_request, http_reply, validate_uuid_string,
-        // ws::{command::MSG_DELETE, Websocket},
-        // ws_reply_with, 
-        Reply, lock_or_exit, http_route_hit_log,
-        lower::file_storage::rm_from_file_storage
+        http_route_hit_log,
+        lower::{
+            error_codes,
+            msg::rm::handle
+        }
     },
     AppData,
 };
@@ -12,66 +12,37 @@ use actix_web::{
     web::{Data, Query},
     HttpResponse,
 };
-use actix_web_actors::ws;
-use log::{
-    error,
-    // debug
-};
+use log::info;
 use msg_store::Uuid;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::{
-    process::exit,
-    sync::Arc
-};
+use std::process::exit;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Info {
     uuid: String,
 }
 
-pub fn handle(data: Data<AppData>, uuid: Arc<Uuid>) -> Reply<()> {
-    {
-        let mut store = lock_or_exit(&data.store);
-        if let Err(error) = store.del(uuid.clone()) {
-            error!("ERROR_CODE: b2a60844-8e3b-4ca9-bccb-e13ada4fadd7. Could not remove msg from store: {}", error);
-            exit(1);
-        }
-    }
-    {
-        let mut db = lock_or_exit(&data.db);
-        if let Err(error) = db.del(uuid.clone()) {
-            error!("ERROR_CODE: 37897fc1-578d-45a1-824b-7b1a1519e6ef. Could not removed msg from database: {}", error);
-            exit(1);
-        }
-    }
-    {
-        if let Some(file_storage_mutex) = &data.file_storage {
-            let mut file_storage = lock_or_exit(file_storage_mutex);
-            if let Err(error_code) = rm_from_file_storage(&mut file_storage, &uuid) {
-                error!("ERROR_CODE: {}", error_code);
-                exit(1);
-            }
-        }
-    }
-    {
-        let mut stats = lock_or_exit(&data.stats);
-        stats.deleted += 1;
-    }
-    Reply::Ok
-}
-
 const ROUTE: &'static str = "DEL /api/msg";
 pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
     http_route_hit_log(ROUTE, Some(info.clone()));
-    let uuid = match validate_uuid_string(info.into_inner().uuid) {
+    info!("{}", ROUTE);
+    let uuid = match Uuid::from_string(&info.uuid) {
         Ok(uuid) => uuid,
-        Err(message) => {
-            return http_bad_request(ROUTE, message);
+        Err(_error) => {
+            info!("{} 400 {}", ROUTE, error_codes::INVALID_UUID);
+            return HttpResponse::BadRequest().body(error_codes::INVALID_UUID)
         }
     };
-    // debug!("uuid: {}", uuid.to_string());
-    http_reply(ROUTE, handle(data, uuid))
+    match handle(&data.store,&data.db,&data.file_storage, &data.stats, uuid) {
+        Ok(_) => {
+            info!("{} 200", ROUTE);
+            return HttpResponse::Ok().finish()
+        },
+        Err(error_code) => {
+            error_codes::log_err(error_code, file!(), line!(), "");
+            exit(1);
+        }
+    }
 }
 
 // pub fn ws_handle(ctx: &mut ws::WebsocketContext<Websocket>, data: Data<AppData>, info: Value) {

@@ -107,7 +107,7 @@ pub fn read_file_storage_direcotory(file_storage_path: &Path) -> Result<Vec<Arc<
     Ok(uuids)
 }
 
-pub fn get_buffer(file_storage_path: &Path, uuid: &Uuid) -> Result<Option<(BufReader<File>, u64)>, &'static str> {
+pub fn get_buffer(file_storage_path: &Path, uuid: &Uuid) -> Result<(BufReader<File>, u64), &'static str> {
     let uuid_string = uuid.to_string();
     let mut file_path = file_storage_path.to_path_buf();
     file_path.push(uuid_string);
@@ -127,7 +127,7 @@ pub fn get_buffer(file_storage_path: &Path, uuid: &Uuid) -> Result<Option<(BufRe
     }?;
     let file_size = metadata.len();
     let buffer = BufReader::new(file);
-    return Ok(Some((buffer, file_size)));
+    return Ok((buffer, file_size));
 }
 
 pub async fn write_to_disk(file_storage_path: &Path, uuid: &Uuid, first_chunk: &[u8], payload: &mut Payload) -> Result<(), &'static str> {
@@ -200,4 +200,10 @@ pub async fn add_to_file_storage(file_storage: &mut FileStorage, uuid: Arc<Uuid>
     write_to_disk(&file_storage.path, &uuid, first_chunk, payload).await?;
     file_storage.index.insert(uuid.clone());
     Ok(())
+}
+
+pub fn discover_files(file_storage: &mut FileStorage, uuids: Vec<Arc<Uuid>>) {
+    for uuid in uuids {
+        file_storage.index.insert(uuid);
+    }
 }

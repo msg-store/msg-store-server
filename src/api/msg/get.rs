@@ -22,7 +22,8 @@ use futures::{
     task::{Context, Poll}
 };
 use log::{
-    error, 
+    error,
+    info
 };
 use msg_store::Uuid;
 use serde::{Deserialize, Serialize};
@@ -123,6 +124,7 @@ pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
         match Uuid::from_string(&uuid_string) {
             Ok(uuid) => Some(uuid),
             Err(_) => {
+                info!("{} 400 {}", ROUTE, error_codes::INVALID_UUID);
                 return HttpResponse::BadRequest().body(error_codes::INVALID_UUID);
             } 
         }
@@ -144,17 +146,24 @@ pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
         reverse) {
         Ok(message_option) => message_option,
         Err(error_code) => {
-            // TODO: error handling
-            return HttpResponse::InternalServerError().finish()
+            error_codes::log_err(error_code, file!(), line!(), "");
+            exit(1);
         }
     };
     let msg_type = match msg_option {
         Some(msg_type) => msg_type,
-        None => return HttpResponse::Ok().finish()
+        None => {
+            info!("{} 200 No Message", ROUTE);
+            return HttpResponse::Ok().finish()
+        }
     };
     let buffer = match msg_type {
         Either::A(buffer) => buffer,
-        Either::B(msg) => return HttpResponse::Ok().body(msg)
+        Either::B(msg) => {
+            info!("{} 200 {}", ROUTE, msg);
+            return HttpResponse::Ok().body(msg)
+        }
     };
+    info!("{} 200 {}", ROUTE, buffer.header);
     HttpResponse::Ok().streaming(buffer)
 }

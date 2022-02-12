@@ -11,8 +11,9 @@ use crate::{
                 add_to_file_storage,
                 FileStorage
             },
+            stats::Stats,
             lock
-        }, Stats
+        }
     }
 };
 use actix_web::{

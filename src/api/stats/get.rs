@@ -1,11 +1,11 @@
 use crate::{
     api::{
         http_reply,
-        Stats,
         // ws::{command::STATS_GET, Websocket},
         // ws_reply_with,
         Reply, lock_or_exit,
-        http_route_hit_log
+        http_route_hit_log,
+        lower::stats::Stats
     },
     AppData
 };
