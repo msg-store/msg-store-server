@@ -4,7 +4,7 @@ pub mod group_defaults;
 pub mod msg;
 pub mod stats;
 pub mod store;
-pub mod ws;
+// pub mod ws;
 pub mod lower;
 
 use crate::config::StoreConfig;
@@ -23,7 +23,7 @@ use std::{
     sync::{Arc, Mutex, MutexGuard}
 };
 
-use self::ws::Websocket;
+// use self::ws::Websocket;
 
 #[derive(Debug, Clone, Copy, Serialize)]
 pub struct Stats {
@@ -225,75 +225,75 @@ pub fn get_required_uuid(value: &Value) -> Result<Arc<Uuid>, String> {
 //     from_value_prop_required::<String>(value, "msg", "string")
 // }
 
-pub fn ws_ok(cmd: &str) -> String {
-    format_log_complete::<()>(&format!("/api/ws {}", cmd), 200, None);
-    match to_string(&json!({ "cmd": cmd,  "status": 200 })) {
-        Ok(msg) => msg,
-        Err(error) => {
-            error!("ERROR_CODE: 9f7c13bc-483d-4076-bc6d-adba42e1958f. Could not convert response to string: {}", error.to_string());
-            exit(1);
-        },
-    }
-}
+// pub fn ws_ok(cmd: &str) -> String {
+//     format_log_complete(&format!("/api/ws {}", cmd), 200, "");
+//     match to_string(&json!({ "cmd": cmd,  "status": 200 })) {
+//         Ok(msg) => msg,
+//         Err(error) => {
+//             error!("ERROR_CODE: 9f7c13bc-483d-4076-bc6d-adba42e1958f. Could not convert response to string: {}", error.to_string());
+//             exit(1);
+//         },
+//     }
+// }
 
-pub fn ws_ok_w_data<T: Serialize + Clone>(cmd: &str, data: T) -> String {
-    format_log_complete(&format!("/api/ws {}", cmd), 200, Some(data.clone()));
-    match to_string(&json!({ "cmd": cmd,  "status": 200, "data": data })) {
-        Ok(msg) => msg,
-        Err(error) => {
-            error!("ERROR_CODE: 49696c3f-b4a2-444d-88b9-336f61c5e77b. Could not convert response to string: {}", error.to_string());
-            exit(1);
-        },
-    }
-}
+// pub fn ws_ok_w_data<T: Serialize + Clone>(cmd: &str, data: T) -> String {
+//     format_log_complete(&format!("/api/ws {}", cmd), 200, data.clone());
+//     match to_string(&json!({ "cmd": cmd,  "status": 200, "data": data })) {
+//         Ok(msg) => msg,
+//         Err(error) => {
+//             error!("ERROR_CODE: 49696c3f-b4a2-444d-88b9-336f61c5e77b. Could not convert response to string: {}", error.to_string());
+//             exit(1);
+//         },
+//     }
+// }
 
-pub fn ws_bad_request(cmd: &str, message: String) -> String {
-    format_log_complete(&format!("/api/ws {}", cmd), 400, Some(message.clone()));
-    match to_string(&json!({ "cmd": cmd,  "status": 400, "message": message })) {
-        Ok(msg) => msg,
-        Err(error) => {
-            error!("ERROR_CODE: 0399a8fc-5b68-4d3f-bd09-238c0bdb0f8d. Could not convert response to string: {}", error.to_string());
-            exit(1);
-        },
-    }
-}
+// pub fn ws_bad_request(cmd: &str, message: String) -> String {
+//     format_log_complete(&format!("/api/ws {}", cmd), 400, Some(message.clone()));
+//     match to_string(&json!({ "cmd": cmd,  "status": 400, "message": message })) {
+//         Ok(msg) => msg,
+//         Err(error) => {
+//             error!("ERROR_CODE: 0399a8fc-5b68-4d3f-bd09-238c0bdb0f8d. Could not convert response to string: {}", error.to_string());
+//             exit(1);
+//         },
+//     }
+// }
 
-pub fn ws_conflict(cmd: &str, message: String) -> String {
-    format_log_complete(&format!("/api/ws {}", cmd), 409, Some(message.clone()));
-    match to_string(&json!({ "cmd": cmd,  "status": 409, "message": message })) {
-        Ok(msg) => msg,
-        Err(error) => {
-            error!("ERROR_CODE: db29040b-3a86-44f4-8b30-b93ec9d569d3. Could not convert response to string: {}", error.to_string());
-            exit(1);
-        },
-    }
-}
+// pub fn ws_conflict(cmd: &str, message: String) -> String {
+//     format_log_complete(&format!("/api/ws {}", cmd), 409, Some(message.clone()));
+//     match to_string(&json!({ "cmd": cmd,  "status": 409, "message": message })) {
+//         Ok(msg) => msg,
+//         Err(error) => {
+//             error!("ERROR_CODE: db29040b-3a86-44f4-8b30-b93ec9d569d3. Could not convert response to string: {}", error.to_string());
+//             exit(1);
+//         },
+//     }
+// }
 
-pub fn ws_not_found(cmd: &str, message: String) -> String {
-    format_log_complete(&format!("/api/ws {}", cmd), 404, Some(message.clone()));
-    match to_string(&json!({ "cmd": cmd,  "status": 404, "message": message })) {
-        Ok(msg) => msg,
-        Err(error) => {
-            error!("ERROR_CODE: 811db0e9-3fd7-4165-b5dd-fa5bebc8a73f. Could not convert response to string: {}", error.to_string());
-            exit(1);
-        },
-    }
-}
+// pub fn ws_not_found(cmd: &str, message: String) -> String {
+//     format_log_complete(&format!("/api/ws {}", cmd), 404, Some(message.clone()));
+//     match to_string(&json!({ "cmd": cmd,  "status": 404, "message": message })) {
+//         Ok(msg) => msg,
+//         Err(error) => {
+//             error!("ERROR_CODE: 811db0e9-3fd7-4165-b5dd-fa5bebc8a73f. Could not convert response to string: {}", error.to_string());
+//             exit(1);
+//         },
+//     }
+// }
 
-pub fn ws_reply_with<'a, T: Serialize + Clone>(
-    ctx: &'a mut WebsocketContext<Websocket>,
-    cmd: &'static str,
-) -> impl FnMut(Reply<T>) + 'a {
-    move |reply| {
-        let message = match reply {
-            Reply::Ok => ws_ok(cmd),
-            Reply::OkWData(data) => ws_ok_w_data(cmd, data),
-            Reply::BadRequest(message) => ws_bad_request(cmd, message),
-            Reply::Conflict(message) => ws_conflict(cmd, message),
-        };
-        ctx.text(message)
-    }
-}
+// pub fn ws_reply_with<'a, T: Serialize + Clone>(
+//     ctx: &'a mut WebsocketContext<Websocket>,
+//     cmd: &'static str,
+// ) -> impl FnMut(Reply<T>) + 'a {
+//     move |reply| {
+//         let message = match reply {
+//             Reply::Ok => ws_ok(cmd),
+//             Reply::OkWData(data) => ws_ok_w_data(cmd, data),
+//             Reply::BadRequest(message) => ws_bad_request(cmd, message),
+//             Reply::Conflict(message) => ws_conflict(cmd, message),
+//         };
+//         ctx.text(message)
+//     }
+// }
 
 pub fn http_reply<T: Serialize + Clone>(route: &str, reply: Reply<T>) -> HttpResponse {
     match reply {
@@ -305,24 +305,24 @@ pub fn http_reply<T: Serialize + Clone>(route: &str, reply: Reply<T>) -> HttpRes
 }
 
 pub fn http_ok(route: &str) -> HttpResponse {
-    format_log_complete::<()>(route, 200, None);
+    format_log_complete(route, 200, "");
     HttpResponse::Ok().finish()
 }
 
-pub fn http_ok_w_data<T: Serialize + Clone>(route: &str, data: T) -> HttpResponse {
-    format_log_complete(route, 200, Some(data.clone()));
+pub fn http_ok_w_data<T: Clone + Serialize>(route: &str, data: T) -> HttpResponse {
+    // format_log_complete(route, 200, format!("{:#?}", data));
     HttpResponse::Ok().json(data)
 }
 
 pub fn http_bad_request(route: &str, message: String) -> HttpResponse {
-    format_log_complete(route, 400, Some(message.clone()));
+    format_log_complete(route, 400, &message);
     HttpResponse::BadRequest()
         .content_type("text/plain")
         .body(message)
 }
 
 pub fn http_conflict(route: &str, message: String) -> HttpResponse {
-    format_log_complete(route, 409, Some(message.clone()));
+    format_log_complete(route, 409, &message);
     HttpResponse::Conflict()
         .content_type("text/plain")
         .body(message)
@@ -359,15 +359,7 @@ pub fn http_route_hit_log<T: Serialize>(route: &str, params: Option<T>) {
     }
 }
 
-pub fn format_log_complete<T: Serialize>(route: &str, status_code: u32, return_body: Option<T>) {
-    if let Some(return_body) = return_body {
-        if let Ok(return_body) = to_string(&return_body) {
-            info!("{} {} {}", route, status_code, return_body);
-        } else {
-            error!("ERROR_CODE: daaf2687-ae47-4a64-ae44-76ca7c89161b. Could not format return body for {}", route);
-            exit(1);
-        }
-    } else {
-        info!("{} {}", status_code, route);
-    }
+pub fn format_log_complete<T: Display + Into<String>>(route: &str, status_code: u32, msg: T) {
+    let output = format!("{} {} {}", route, status_code, msg);
+    info!("{}", output.trim());
 }

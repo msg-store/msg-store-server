@@ -2,8 +2,9 @@ use crate::{
     api::{
         from_value_prop, get_optional_number, http_reply,
         Stats,
-        ws::{command::STATS_PUT, Websocket},
-        ws_reply_with, Reply, lock_or_exit, http_route_hit_log
+        // ws::{command::STATS_PUT, Websocket},
+        // ws_reply_with, 
+        Reply, lock_or_exit, http_route_hit_log
     },
     AppData
 };
@@ -123,7 +124,7 @@ pub fn http_handle(data: Data<AppData>, body: Json<Value>) -> HttpResponse {
     http_reply(ROUTE, handle(data, body.into_inner()))
 }
 
-pub fn ws_handle(ctx: &mut ws::WebsocketContext<Websocket>, data: Data<AppData>, body: Value) {
-    http_route_hit_log(STATS_PUT, Some(body.clone()));
-    ws_reply_with(ctx, STATS_PUT)(handle(data, body));
-}
+// pub fn ws_handle(ctx: &mut ws::WebsocketContext<Websocket>, data: Data<AppData>, body: Value) {
+//     http_route_hit_log(STATS_PUT, Some(body.clone()));
+//     ws_reply_with(ctx, STATS_PUT)(handle(data, body));
+// }

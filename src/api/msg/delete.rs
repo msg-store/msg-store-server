@@ -1,8 +1,9 @@
 use crate::{
     api::{
         get_required_uuid, http_bad_request, http_reply, validate_uuid_string,
-        ws::{command::MSG_DELETE, Websocket},
-        ws_reply_with, Reply, lock_or_exit, http_route_hit_log,
+        // ws::{command::MSG_DELETE, Websocket},
+        // ws_reply_with, 
+        Reply, lock_or_exit, http_route_hit_log,
         lower::file_storage::rm_from_file_storage
     },
     AppData,
@@ -73,14 +74,14 @@ pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
     http_reply(ROUTE, handle(data, uuid))
 }
 
-pub fn ws_handle(ctx: &mut ws::WebsocketContext<Websocket>, data: Data<AppData>, info: Value) {
-    http_route_hit_log(MSG_DELETE, Some(info.clone()));
-    let mut reply = ws_reply_with(ctx, MSG_DELETE);
-    let uuid = match get_required_uuid(&info) {
-        Ok(uuid) => uuid,
-        Err(message) => {
-            return reply(Reply::BadRequest(format!("/data/{}", message)));
-        }
-    };
-    reply(handle(data, uuid));
-}
+// pub fn ws_handle(ctx: &mut ws::WebsocketContext<Websocket>, data: Data<AppData>, info: Value) {
+//     http_route_hit_log(MSG_DELETE, Some(info.clone()));
+//     let mut reply = ws_reply_with(ctx, MSG_DELETE);
+//     let uuid = match get_required_uuid(&info) {
+//         Ok(uuid) => uuid,
+//         Err(message) => {
+//             return reply(Reply::BadRequest(format!("/data/{}", message)));
+//         }
+//     };
+//     reply(handle(data, uuid));
+// }

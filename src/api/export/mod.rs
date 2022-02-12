@@ -1,7 +1,7 @@
 use crate::{
     api::{
         get_optional_string, get_required_string, http_route_hit_log, format_log_complete, http_reply,
-        ws::command::EXPORT,
+        // ws::command::EXPORT,
         lower::{
             export::{
                 get_export_destination_directory,
@@ -37,8 +37,9 @@ use std::{
 
 use super::{
     prepend_data_str,
-    ws::Websocket,
-    ws_reply_with, Reply, lock_or_exit
+    // ws::Websocket,
+    // ws_reply_with, 
+    Reply, lock_or_exit
 };
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -348,15 +349,15 @@ pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
     http_reply(ROUTE, handle(data, info.into_inner()))
 }
 
-pub fn ws_handle(ctx: &mut WebsocketContext<Websocket>, data: Data<AppData>, info: Value) {
-    http_route_hit_log(EXPORT, Some(info.clone()));
-    let mut reply = ws_reply_with(ctx, EXPORT);
-    let info = match get_info(&info) {
-        Ok(info) => info,
-        Err(message) => {
-            format_log_complete::<()>(ROUTE, 400, None);
-            return reply(Reply::BadRequest(message));
-        }
-    };
-    reply(handle(data, info));
-}
+// pub fn ws_handle(ctx: &mut WebsocketContext<Websocket>, data: Data<AppData>, info: Value) {
+//     http_route_hit_log(EXPORT, Some(info.clone()));
+//     let mut reply = ws_reply_with(ctx, EXPORT);
+//     let info = match get_info(&info) {
+//         Ok(info) => info,
+//         Err(message) => {
+//             format_log_complete(ROUTE, 400, "");
+//             return reply(Reply::BadRequest(message));
+//         }
+//     };
+//     reply(handle(data, info));
+// }

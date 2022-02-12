@@ -77,7 +77,7 @@ async fn main() -> std::io::Result<()> {
                 "/api/group-defaults",
                 web::post().to(api::group_defaults::post::http_handle),
             )
-            .route("/api/msg", web::get().to(api::msg::get::handle))
+            .route("/api/msg", web::get().to(api::msg::get::http_handle))
             .route("/api/msg", web::delete().to(api::msg::delete::http_handle))
             .route("/api/msg", web::post().to(api::msg::post::http_handle))
             .route(
@@ -88,7 +88,7 @@ async fn main() -> std::io::Result<()> {
             .route("/api/stats", web::put().to(api::stats::put::http_handle))
             .route("/api/store", web::get().to(api::store::get::http_handle))
             .route("/api/store", web::put().to(api::store::put::http_handle))
-            .service(web::resource("/ws").route(web::get().to(api::ws::ws_index)))
+            // .service(web::resource("/ws").route(web::get().to(api::ws::ws_index)))
     })
     // start http server on 127.0.0.1:8080
     .bind(init_result.host)?

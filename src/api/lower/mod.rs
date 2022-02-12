@@ -44,12 +44,16 @@ pub mod error_codes {
     pub const MISSING_PRIORITY: Str = "MISSING_PRIORITY";
     pub const INVALID_BYTESIZE_OVERRIDE: Str = "INVALID_BYTESIZE_OVERRIDE";
     pub const MISSING_BYTESIZE_OVERRIDE: Str = "MISSING_BYTESIZE_OVERRIDE";
+    pub const INVALID_UUID: Str = "INVALID_UUID";
 
     /// Store Errors
     pub const MSG_STORE_CONFLICT: Str = "MSG_STORE_CONFLICT";
     pub const MSG_EXCEEDES_STORE_MAX: Str = "EXCEEDES_STORE_MAX";
     pub const MSG_EXCEEDES_GROUP_MAX: Str = "EXCEEDES_GROUP_MAX";
     pub const MSG_LACKS_PRIORITY: Str = "MSG_LACKS_PRIORITY";
+
+    /// Store Fatal Errors
+    pub const SYNC_ERROR: Str = "SYNC_ERROR";
 
     pub fn could_not_create_directory<T: Display + Into<String>>(file: Str, line: u32, error: T) -> Str {
         log_err(COULD_NOT_CREATE_DIRECTORY, file, line, error);
@@ -118,6 +122,10 @@ pub mod stats {
 
 pub type FileList = BTreeSet<Arc<Uuid>>;
 pub type Database = Box<dyn Db>;
+pub enum Either<A, B> {
+    A(A),
+    B(B)
+}
 
 pub fn lock<'a, T: Send + Sync>(item: &'a Mutex<T>) -> Result<MutexGuard<'a, T>, &'static str> {
     match item.lock() {

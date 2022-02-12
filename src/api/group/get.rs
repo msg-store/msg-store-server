@@ -1,8 +1,9 @@
 use crate::{
     api::{
         from_value_prop, http_reply,
-        ws::{command::GROUP_GET, Websocket},
-        ws_reply_with, Reply, lock_or_exit,
+        // ws::{command::GROUP_GET, Websocket},
+        // ws_reply_with, 
+        Reply, lock_or_exit,
         http_route_hit_log
     },
     AppData,
@@ -115,15 +116,15 @@ pub fn validate_params(value: Value) -> Result<Info, String> {
     })
 }
 
-pub fn ws_handle(ctx: &mut WebsocketContext<Websocket>, data: Data<AppData>, info: Value) {
-    http_route_hit_log(GROUP_GET, Some(info.clone()));
-    let mut reply = ws_reply_with(ctx, GROUP_GET);
-    let info = match validate_params(info) {
-        Ok(info) => info,
-        Err(message) => {
-            reply(Reply::BadRequest(message));
-            return;
-        }
-    };
-    reply(handle(data, info));
-}
+// pub fn ws_handle(ctx: &mut WebsocketContext<Websocket>, data: Data<AppData>, info: Value) {
+//     http_route_hit_log(GROUP_GET, Some(info.clone()));
+//     let mut reply = ws_reply_with(ctx, GROUP_GET);
+//     let info = match validate_params(info) {
+//         Ok(info) => info,
+//         Err(message) => {
+//             reply(Reply::BadRequest(message));
+//             return;
+//         }
+//     };
+//     reply(handle(data, info));
+// }

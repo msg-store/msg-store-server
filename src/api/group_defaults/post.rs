@@ -1,8 +1,9 @@
 use crate::{
     api::{
         get_optional_max_byte_size, get_required_priority, http_reply, update_config,
-        ws::{command::GROUP_DEFAULTS_POST, Websocket},
-        ws_reply_with, Reply, lock_or_exit, http_route_hit_log,
+        // ws::{command::GROUP_DEFAULTS_POST, Websocket},
+        // ws_reply_with, 
+        Reply, lock_or_exit, http_route_hit_log,
         lower::file_storage::rm_from_file_storage
     },
     config::GroupConfig,
@@ -120,7 +121,7 @@ pub fn http_handle(data: Data<AppData>, body: Json<Value>) -> HttpResponse {
     http_reply(ROUTE, handle(data, body.into_inner()))
 }
 
-pub fn ws_handle(ctx: &mut WebsocketContext<Websocket>, data: Data<AppData>, body: Value) {
-    http_route_hit_log(GROUP_DEFAULTS_POST, Some(body.clone()));
-    (ws_reply_with(ctx, GROUP_DEFAULTS_POST)(handle(data, body)));
-}
+// pub fn ws_handle(ctx: &mut WebsocketContext<Websocket>, data: Data<AppData>, body: Value) {
+//     http_route_hit_log(GROUP_DEFAULTS_POST, Some(body.clone()));
+//     (ws_reply_with(ctx, GROUP_DEFAULTS_POST)(handle(data, body)));
+// }

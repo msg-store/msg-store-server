@@ -1,8 +1,9 @@
 use crate::{
     api::{
         http_reply,
-        ws::{command::STORE_GET, Websocket},
-        ws_reply_with, Reply, lock_or_exit, http_route_hit_log,
+        // ws::{command::STORE_GET, Websocket},
+        // ws_reply_with, 
+        Reply, lock_or_exit, http_route_hit_log,
     },
     AppData,
 };
@@ -74,7 +75,7 @@ pub fn http_handle(data: Data<AppData>) -> HttpResponse {
     http_reply("GET /api/store", handle(data))
 }
 
-pub fn ws_handle(ctx: &mut WebsocketContext<Websocket>, data: Data<AppData>) {
-    http_route_hit_log::<()>(STORE_GET, None);
-    ws_reply_with(ctx, STORE_GET)(handle(data));
-}
+// pub fn ws_handle(ctx: &mut WebsocketContext<Websocket>, data: Data<AppData>) {
+//     http_route_hit_log::<()>(STORE_GET, None);
+//     ws_reply_with(ctx, STORE_GET)(handle(data));
+// }

@@ -1,8 +1,9 @@
 use crate::{
     api::{
         get_required_priority, http_reply, update_config,
-        ws::{command::GROUP_DEFAULTS_DELETE, Websocket},
-        ws_reply_with, Reply, lock_or_exit, http_route_hit_log
+        // ws::{command::GROUP_DEFAULTS_DELETE, Websocket},
+        // ws_reply_with,
+        Reply, lock_or_exit, http_route_hit_log
     },
     config::GroupConfig,
     AppData,
@@ -61,12 +62,12 @@ pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
     http_reply(ROUTE, handle(data, info.into_inner()))
 }
 
-pub fn ws_handle(ctx: &mut WebsocketContext<Websocket>, data: Data<AppData>, info: Value) {
-    http_route_hit_log(GROUP_DEFAULTS_DELETE, Some(info.clone()));
-    let mut reply = ws_reply_with(ctx, GROUP_DEFAULTS_DELETE);
-    let priority = match get_required_priority(&info) {
-        Ok(priority) => priority,
-        Err(message) => return reply(Reply::BadRequest(message)),
-    };
-    reply(handle(data, Info { priority }));
-}
+// pub fn ws_handle(ctx: &mut WebsocketContext<Websocket>, data: Data<AppData>, info: Value) {
+//     http_route_hit_log(GROUP_DEFAULTS_DELETE, Some(info.clone()));
+//     let mut reply = ws_reply_with(ctx, GROUP_DEFAULTS_DELETE);
+//     let priority = match get_required_priority(&info) {
+//         Ok(priority) => priority,
+//         Err(message) => return reply(Reply::BadRequest(message)),
+//     };
+//     reply(handle(data, Info { priority }));
+// }
