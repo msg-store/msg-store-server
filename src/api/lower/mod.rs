@@ -42,6 +42,7 @@ pub mod error_codes {
     pub const MISSING_HEADERS: Str = "MISSING_HEADERS";
     pub const MALFORMED_HEADERS: Str = "MALFORMED_HEADERS";
     pub const FILE_STORAGE_NOT_CONFIGURED: Str = "FILE_STORAGE_NOT_CONFIGURED";
+    pub const PAYLOAD_ERROR: Str = "PAYLOAD_ERROR";
 
     /// Messaging Errors
     pub const INVALID_PRIORITY: Str = "INVALID_PRIORITY";

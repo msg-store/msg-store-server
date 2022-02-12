@@ -6,13 +6,12 @@ use crate::api::lower::file_storage::{
     FileStorage
 };
 use crate::api::lower::stats::Stats;
-use actix_web::web::BytesMut;
-use actix_web::dev::Payload;
-use bytes::Bytes;
-use futures::StreamExt;
+use bytes::{Bytes, BytesMut};
+use futures::{Stream, StreamExt};
 use msg_store::{errors::Error, Uuid, Store};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use std::marker::Unpin;
 use std::sync::{Arc,Mutex};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -21,14 +20,16 @@ pub struct Body {
     msg: String,
 }
 
-// NEW BODY => PRIORITY=1 MSG=my really long msg ...
+pub trait Chunky: Stream<Item=Result<Bytes, &'static str>> + Unpin {
 
-pub async fn handle(
+}
+
+pub async fn handle<T: Chunky>(
     store: &Mutex<Store>,
     file_storage: &Option<Mutex<FileStorage>>,
     stats: &Mutex<Stats>,
     database: &Mutex<Database>,
-    payload: &mut Payload) -> Result<Arc<Uuid>, &'static str> {
+    payload: &mut T) -> Result<Arc<Uuid>, &'static str> {
 
         let mut metadata_string = String::new();
         let mut msg_chunk = BytesMut::new();
@@ -98,7 +99,7 @@ pub async fn handle(
             },
             None => Err(error_codes::MISSING_PRIORITY)
         }?;
-        
+
         let (msg_byte_size, msg) = {
             if save_to_file == true {
                 if let Some(byte_size_override_str) = metadata.get("byteSizeOverride") {
