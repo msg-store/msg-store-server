@@ -8,6 +8,7 @@ use std::{
 
 pub mod export;
 pub mod file_storage;
+pub mod group;
 pub mod msg;
 
 pub mod error_codes {
