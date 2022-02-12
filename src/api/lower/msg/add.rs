@@ -1,36 +1,19 @@
-use crate::{
-    api::{
-        lower::{
-            Database,
-            error_codes::{
-                self,
-                log_err
-            },
-            file_storage::{
-                rm_from_file_storage,
-                add_to_file_storage,
-                FileStorage
-            },
-            stats::Stats,
-            lock
-        }
-    }
+use crate::api::lower::{Database, lock};
+use crate::api::lower::error_codes::{ self, log_err };
+use crate::api::lower::file_storage::{
+    rm_from_file_storage,
+    add_to_file_storage,
+    FileStorage
 };
-use actix_web::{
-    web::{
-
-        BytesMut
-    },
-    dev::Payload,
-};
+use crate::api::lower::stats::Stats;
+use actix_web::web::BytesMut;
+use actix_web::dev::Payload;
 use bytes::Bytes;
 use futures::StreamExt;
 use msg_store::{errors::Error, Uuid, Store};
 use serde::{Deserialize, Serialize};
-use std::{
-    collections::BTreeMap,
-    sync::{Arc,Mutex}
-};
+use std::collections::BTreeMap;
+use std::sync::{Arc,Mutex};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Body {
@@ -115,8 +98,7 @@ pub async fn handle(
             },
             None => Err(error_codes::MISSING_PRIORITY)
         }?;
-    
-        // debug!("text: {}", buffer_str);
+        
         let (msg_byte_size, msg) = {
             if save_to_file == true {
                 if let Some(byte_size_override_str) = metadata.get("byteSizeOverride") {
@@ -147,12 +129,6 @@ pub async fn handle(
                 }
             }
         }?;
-        
-        // debug!("priority: {}, msg_byte_size: {}, save_to_file: {}, msg: {}", priority, msg_byte_size, save_to_file, msg);
-    
-        
-
-        // let msg_byte_size = msg.len() as u32;
         let add_result = {
             let mut store = lock(&store)?;
             match store.add(priority, msg_byte_size) {
