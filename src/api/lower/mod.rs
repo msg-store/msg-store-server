@@ -1,10 +1,7 @@
 pub use log::error;
 pub use msg_store::{Store as MsgStore, Uuid};
 use msg_store_db_plugin::Db;
-use std::{
-    collections::BTreeSet,
-    sync::{Arc, Mutex, MutexGuard}
-};
+use std::sync::{Mutex, MutexGuard};
 
 pub mod export;
 pub mod file_storage;
@@ -12,6 +9,7 @@ pub mod group;
 pub mod group_defaults;
 pub mod msg;
 pub mod stats;
+pub mod store;
 
 pub mod error_codes {
 
@@ -53,7 +51,6 @@ pub mod error_codes {
     pub const INVALID_UUID: Str = "INVALID_UUID";
 
     /// Store Errors
-    pub const MSG_STORE_CONFLICT: Str = "MSG_STORE_CONFLICT";
     pub const MSG_EXCEEDES_STORE_MAX: Str = "EXCEEDES_STORE_MAX";
     pub const MSG_EXCEEDES_GROUP_MAX: Str = "EXCEEDES_GROUP_MAX";
     pub const MSG_LACKS_PRIORITY: Str = "MSG_LACKS_PRIORITY";
@@ -93,43 +90,6 @@ pub mod error_codes {
 
 }
 
-// pub mod stats {
-//     use serde::Serialize;
-
-//     #[derive(Serialize, Clone, Copy)]
-//     pub struct Stats {
-//         pub inserted: u32,
-//         pub deleted: u32,
-//         pub pruned: u32
-//     }
-//     impl Stats {
-//         pub fn new() -> Stats {
-//             Stats {
-//                 inserted: 0,
-//                 deleted: 0,
-//                 pruned: 0
-//             }
-//         }
-//         pub fn add(&mut self, inserted: u32, deleted: u32, pruned: u32) {
-//             self.inserted += inserted;
-//             self.deleted += deleted;
-//             self.pruned += pruned;
-//         }
-//         pub fn replace(&mut self, inserted: u32, deleted: u32, pruned: u32) {
-//             self.inserted = inserted;
-//             self.deleted = deleted;
-//             self.pruned = pruned;
-//         }
-//     }
-    
-// }
-
-// pub fn test(stats: Mutex<stats::Stats>) {
-//     let stats = stats.lock().unwrap();
-//     stats.add(1, 2, 3);
-// }
-
-pub type FileList = BTreeSet<Arc<Uuid>>;
 pub type Database = Box<dyn Db>;
 pub enum Either<A, B> {
     A(A),
