@@ -1,7 +1,7 @@
-use crate::AppData;
-use crate::api::lower::stats::rm::handle;
-use crate::api::lower::error_codes::log_err;
 use actix_web::{web::Data, HttpResponse};
+use crate::AppData;
+use msg_store::api::stats::rm::handle;
+use msg_store::api::error_codes::log_err;
 use log::info;
 use std::process::exit;
 

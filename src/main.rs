@@ -3,35 +3,30 @@ use actix_web::{
     web::{self, Data},
     App, HttpServer,
 };
-use msg_store::Store;
-use msg_store_db_plugin::Db;
+use msg_store::api::config::StoreConfig;
+use msg_store::api::file_storage::FileStorage;
+use msg_store::api::stats::Stats;
+use msg_store::core::store::Store;
+use msg_store::database::Db;
 use env_logger::{Builder, Target};
 use std::{
     path::PathBuf, sync::Mutex
 };
 
 mod api;
-mod config;
 mod init;
 mod lib;
-// mod plugins;
 
-use config::StoreConfig;
 use init::init;
-// use api;
 
-// pub type StoreGaurd<'a> = MutexGuard<'a, Store>;
-// pub type ConfigGaurd<'a> = MutexGuard<'a, StoreConfig>;
-
-// TODO: read saved files list on start up
 
 pub struct AppData {
     pub store: Mutex<Store>,
     pub configuration: Mutex<StoreConfig>,
     pub configuration_path: Option<PathBuf>,
     pub db: Mutex<Box<dyn Db>>,
-    pub file_storage: Option<Mutex<api::lower::file_storage::FileStorage>>,
-    pub stats: Mutex<api::lower::stats::Stats>
+    pub file_storage: Option<Mutex<FileStorage>>,
+    pub stats: Mutex<Stats>
 }
 
 #[actix_web::main]

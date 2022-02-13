@@ -1,10 +1,10 @@
-use crate::AppData;
-use crate::api::lower::msg::rm::handle;
-use crate::api::lower::error_codes;
 use actix_web::web::{Data, Query};
 use actix_web::HttpResponse;
+use crate::AppData;
 use log::info;
-use msg_store::Uuid;
+use msg_store::api::error_codes;
+use msg_store::api::msg::rm::handle;
+use msg_store::core::uuid::Uuid;
 use serde::{Deserialize, Serialize};
 use std::process::exit;
 

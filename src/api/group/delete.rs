@@ -1,17 +1,13 @@
-use crate::{
-    api::{
-        lower::{
-            group::rm,
-            error_codes
-        }
-    },
-    AppData
-};
 use actix_web::{
     web::{Data, Query},
     HttpResponse,
 };
+use crate::AppData;
 use log::info;
+use msg_store::api::{
+    group::rm,
+    error_codes
+};
 use serde::{Deserialize, Serialize};
 use std::process::exit;
 

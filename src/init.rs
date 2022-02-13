@@ -1,32 +1,23 @@
+use bytes::Bytes;
 use clap::{App, Arg};
 use dirs::home_dir;
 use log::{error, debug};
-use msg_store::{Store, Uuid};
-use msg_store_db_plugin::{Db, Bytes};
-use msg_store_plugin_leveldb::Leveldb;
-// use serde_json::to_string_pretty;
-use std::{
-    collections::{BTreeMap},
-    fs::create_dir_all,
-    path::PathBuf,
-    process::exit,
-    sync::{Arc, Mutex}
+use msg_store::core::store::Store;
+use msg_store::core::uuid::Uuid;
+use msg_store::database::leveldb::{Db, Leveldb};
+use msg_store::api::file_storage::{
+    FileStorage,
+    read_file_storage_direcotory,
+    discover_files,
+    rm_from_file_storage
 };
-
-use crate::{
-    api::{
-        lower::{
-            file_storage::{
-                FileStorage,
-                read_file_storage_direcotory,
-                discover_files,
-                rm_from_file_storage
-            },
-            stats::Stats
-        }
-    },
-    config::StoreConfig
-};
+use msg_store::api::stats::Stats;
+use msg_store::api::config::StoreConfig;
+use std::collections::BTreeMap;
+use std::fs::create_dir_all;
+use std::path::PathBuf;
+use std::process::exit;
+use std::sync::{Arc, Mutex};
 
 pub struct InitResult {
     pub host: String,

@@ -1,13 +1,13 @@
-use crate::AppData;
-use crate::api::lower::error_codes;
-use crate::api::lower::msg::get::{handle, ReturnBody as ApiReturn};
-use crate::api::lower::Either;
 use actix_web::{ HttpResponse, Error };
 use actix_web::web::{ Data, Query, Bytes };
+use crate::AppData;
 use futures::stream::{Stream, StreamExt};
 use futures::task::{Context, Poll};
 use log::info;
-use msg_store::Uuid;
+use msg_store::api::error_codes;
+use msg_store::api::msg::get::{handle, ReturnBody as ApiReturn};
+use msg_store::api::Either;
+use msg_store::core::uuid::Uuid;
 use serde::{Deserialize, Serialize};
 use std::pin::Pin;
 use std::process::exit;
