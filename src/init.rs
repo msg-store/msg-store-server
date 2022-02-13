@@ -1,10 +1,10 @@
-use bytes::Bytes;
 use clap::{App, Arg};
 use dirs::home_dir;
 use log::{error, debug};
 use msg_store::core::store::Store;
-use msg_store::core::uuid::Uuid;
-use msg_store::database::leveldb::{Db, Leveldb};
+use msg_store::database::Db;
+use msg_store::database::in_memory::MemDb;
+use msg_store::database::leveldb::Leveldb;
 use msg_store::api::file_storage::{
     FileStorage,
     read_file_storage_direcotory,
@@ -13,11 +13,10 @@ use msg_store::api::file_storage::{
 };
 use msg_store::api::stats::Stats;
 use msg_store::api::config::StoreConfig;
-use std::collections::BTreeMap;
 use std::fs::create_dir_all;
 use std::path::PathBuf;
 use std::process::exit;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 pub struct InitResult {
     pub host: String,
@@ -108,41 +107,6 @@ fn get_app<'a>() -> App<'a, 'a> {
                 .takes_value(true)
                 .help("Sets the location of the messages held in files"),
         )
-}
-
-struct MemDb {
-    msgs: BTreeMap<Arc<Uuid>, Bytes>,
-    byte_size_data: BTreeMap<Arc<Uuid>, u32>
-}
-impl MemDb {
-    pub fn new() -> MemDb {
-        MemDb {
-            msgs: BTreeMap::new(),
-            byte_size_data: BTreeMap::new()
-        }
-    }
-}
-impl Db for MemDb {
-    fn add(&mut self, uuid: Arc<Uuid>, msg: Bytes, msg_byte_size: u32) -> Result<(), String> {
-        self.msgs.insert(uuid.clone(), msg);
-        self.byte_size_data.insert(uuid, msg_byte_size);
-        Ok(())
-    }
-    fn get(&mut self, uuid: Arc<Uuid>) -> Result<Bytes, String> {
-        match self.msgs.get(&uuid) {
-            Some(msg) => Ok(msg.clone()),
-            None => Err("msg not found".to_string())
-        }
-    }
-    fn del(&mut self, uuid: Arc<Uuid>) -> Result<(), String> {
-        self.msgs.remove(&uuid);
-        self.byte_size_data.remove(&uuid);
-        Ok(())
-    }
-    fn fetch(&mut self) -> Result<Vec<(Arc<Uuid>, u32)>, String> {
-        Ok(vec![])
-        // Ok(self.byte_size_data.into_iter().collect::<Vec<(Uuid, u32)>>())
-    }
 }
 
 pub fn init() -> InitResult {
