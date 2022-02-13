@@ -14,7 +14,17 @@ use std::{
 };
 
 use crate::{
-    api::{FileManager, Stats},
+    api::{
+        lower::{
+            file_storage::{
+                FileStorage,
+                read_file_storage_direcotory,
+                discover_files,
+                rm_from_file_storage
+            },
+            stats::Stats
+        }
+    },
     config::StoreConfig
 };
 
@@ -24,7 +34,7 @@ pub struct InitResult {
     pub configuration: Mutex<StoreConfig>,
     pub db: Mutex<Box<dyn Db>>,
     pub configuration_path: Option<PathBuf>,
-    pub file_manager: Option<Mutex<FileManager>>,
+    pub file_storage: Option<Mutex<FileStorage>>,
     pub stats: Mutex<Stats>
 }
 
@@ -355,12 +365,19 @@ pub fn init() -> InitResult {
         }
     };
     // get file list of all files stored on disk
-    let mut file_manager: Option<FileManager> = {
+    let mut file_storage: Option<FileStorage> = {
         if let Some(file_storage_path) = &configuration.file_storage_path {
-            debug!("file manager found");
-            Some(FileManager::open(file_storage_path))
+            let mut file_storage = FileStorage::new(file_storage_path);
+            let uuids = match read_file_storage_direcotory(file_storage_path) {
+                Ok(index) => index,
+                Err(error_code) => {
+                    error!("ERROR_CODE: {}.", error_code);
+                    exit(1);
+                }
+            };
+            discover_files(&mut file_storage, uuids);
+            Some(file_storage)
         } else {
-            debug!("file manager not found");
             None
         }
     };
@@ -393,8 +410,13 @@ pub fn init() -> InitResult {
         (removed_uuids, pruned_count as u32)
     };
     // removed pruned files if any
-    if let Some(file_manager) = file_manager.as_mut() {
-        file_manager.del_batch(removed_uuids);
+    if let Some(file_storage) = file_storage.as_mut() {
+        for uuid in removed_uuids {
+            if let Err(error_code) = rm_from_file_storage(file_storage, &uuid) {
+                error!("ERROR_CODE: {}.", error_code);
+                exit(1);
+            }
+        }
     }
     let stats = Stats { inserted: 0, deleted: 0, pruned: pruned_count };
     
@@ -402,8 +424,8 @@ pub fn init() -> InitResult {
         host: format!("{}:{}", host, port),
         store: Mutex::new(store),
         db: Mutex::new(database),
-        file_manager: match file_manager {
-            Some(file_manager) => Some(Mutex::new(file_manager)),
+        file_storage: match file_storage {
+            Some(file_storage) => Some(Mutex::new(file_storage)),
             None => None
         },
         configuration: Mutex::new(configuration),

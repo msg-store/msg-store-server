@@ -1,34 +1,21 @@
-use crate::{
-    api::{
-        http_reply,
-        Stats,
-        ws::{command::STATS_DELETE, Websocket},
-        ws_reply_with, Reply, lock_or_exit, http_route_hit_log,
-    },
-    AppData
-};
+use crate::AppData;
+use crate::api::lower::stats::rm::handle;
+use crate::api::lower::error_codes::log_err;
 use actix_web::{web::Data, HttpResponse};
-use actix_web_actors::ws;
-
-pub fn handle(data: Data<AppData>) -> Reply<Stats> {
-    let stats = {
-        let mut stats = lock_or_exit(&data.stats);
-        let old_stats = stats.clone();
-        stats.inserted = 0;
-        stats.deleted = 0;
-        stats.pruned = 0;
-        old_stats
-    };
-    Reply::OkWData(stats)
-}
+use log::info;
+use std::process::exit;
 
 const ROUTE: &'static str = "DEL /api/stats";
 pub fn http_handle(data: Data<AppData>) -> HttpResponse {
-    http_route_hit_log::<()>(ROUTE, None);
-    http_reply(ROUTE, handle(data))
-}
-
-pub fn ws_handle(ctx: &mut ws::WebsocketContext<Websocket>, data: Data<AppData>) {
-    http_route_hit_log::<()>(STATS_DELETE, None);
-    ws_reply_with(ctx, STATS_DELETE)(handle(data));
+    info!("{}", ROUTE);
+    match handle(&data.stats) {
+        Ok(stats) => {
+            info!("{} 200 {}", ROUTE, stats);
+            HttpResponse::Ok().json(stats)
+        },
+        Err(error_code) => {
+            log_err(error_code, file!(), line!(), "");
+            exit(1);
+        }
+    }
 }

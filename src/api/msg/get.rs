@@ -1,41 +1,16 @@
-use crate::{
-    api::{
-        // from_value_prop, get_optional_priority, get_optional_uuid, http_reply,
-        validate_uuid_string,
-        // ws::{command::MSG_GET, Websocket},
-        lock_or_exit, FileManager,
-        // ws_reply_with, Reply, http_bad_request, 
-        // http_route_hit_log,
-    },
-    AppData,
-};
-use actix_web::{
-    web::{
-        Data, Query, Bytes, 
-        // BytesMut
-    },
-    HttpResponse,
-    Error
-};
-// use actix_web_actors::ws::WebsocketContext;
-use futures::{
-    stream::Stream,
-    task::{Context, Poll}
-};
-use log::{
-    error, 
-    // debug
-};
+use crate::AppData;
+use crate::api::lower::error_codes;
+use crate::api::lower::msg::get::{handle, ReturnBody as ApiReturn};
+use crate::api::lower::Either;
+use actix_web::{ HttpResponse, Error };
+use actix_web::web::{ Data, Query, Bytes };
+use futures::stream::{Stream, StreamExt};
+use futures::task::{Context, Poll};
+use log::info;
 use msg_store::Uuid;
 use serde::{Deserialize, Serialize};
-// use serde_json::Value;
-use std::{
-    fs::File,
-    pin::Pin,
-    process::exit,
-    io::{BufReader, Read},
-    sync::Arc
-};
+use std::pin::Pin;
+use std::process::exit;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct MsgData {
@@ -50,29 +25,13 @@ pub struct Info {
     reverse: Option<bool>,
 }
 
-pub struct InnerInfo {
-    uuid: Option<Arc<Uuid>>,
-    priority: Option<u32>,
-    reverse: Option<bool>,
-}
-
 pub struct ReturnBody {
-    header: String,
-    msg: BufReader<File>,
-    file_size: u64,
-    bytes_read: u64,
-    headers_sent: bool,
-    msg_sent: bool
+    stream: ApiReturn
 }
 impl ReturnBody {
-    pub fn new(header: String, file_size: u64, msg: BufReader<File>) -> ReturnBody {
+    pub fn new(stream: ApiReturn) -> ReturnBody {
         ReturnBody {
-            header,
-            file_size,
-            bytes_read: 0,
-            msg,
-            headers_sent: false,
-            msg_sent: false
+            stream
         }
     }
 }
@@ -80,246 +39,74 @@ impl Stream for ReturnBody {
     type Item = Result<Bytes, Error>;
     fn poll_next(
         mut self: Pin<&mut Self>, 
-        _cx: &mut Context<'_>
+        cx: &mut Context<'_>
     ) -> Poll<Option<Self::Item>> {
-        // debug!("poll called");
-        if self.msg_sent {
-            return Poll::Ready(None);
-        }
-        if self.headers_sent {            
-            let limit = self.file_size - self.bytes_read;
-            if limit >= 665600 {
-                let mut buffer = [0; 665600];
-                let _bytes_read = match self.msg.read(&mut buffer) {
-                    Ok(bytes_read) => bytes_read,
-                    Err(error) => {
-                        error!("ERROR_CODE: 980e2389-d8d4-448a-b60e-cb007f755d0b. Could not read to buffer: {}", error.to_string());
-                        exit(1)
-                    }
-                };
-                {
-                    let mut body = self.as_mut().get_mut();
-                    body.bytes_read += 665600;
-                }
-                return Poll::Ready(Some(Ok(Bytes::copy_from_slice(&buffer))));
-            } else if limit == 0 {
-                return Poll::Ready(None);
-            } else {
-                let mut buffer = Vec::with_capacity(limit as usize);
-                if let Err(error) = self.msg.read_to_end(&mut buffer) {
-                    error!("ERROR_CODE: e2865655-31f6-486f-8b8b-a360a506eb76. Could not read to buffer: {}", error.to_string());
-                    exit(1)
-                };
-                {
-                    let mut body = self.as_mut().get_mut();
-                    body.msg_sent = true;
-                }
-                return Poll::Ready(Some(Ok(Bytes::copy_from_slice(&buffer))));
+        let chunk_option = match self.stream.poll_next_unpin(cx) {
+            Poll::Ready(chunk_option) => chunk_option,
+            Poll::Pending => { return Poll::Pending }
+        };
+        let chunk_result = match chunk_option {
+            Some(chunk_result) => chunk_result,
+            None => return Poll::Ready(None)
+        };
+        match chunk_result {
+            Ok(bytes) => Poll::Ready(Some(Ok(Bytes::copy_from_slice(&bytes)))),
+            Err(error_code) => {
+                error_codes::log_err(error_code, file!(), line!(), "");
+                Poll::Ready(Some(Err(Error::from(()))))
             }
-        } else {
-            {
-                let mut body = self.as_mut().get_mut();
-                body.headers_sent = true;
-            }
-            Poll::Ready(Some(Ok(Bytes::copy_from_slice(&self.header.as_bytes()))))
         }
     }
 }
 
-pub fn make_inner_info(info: Info) -> Result<InnerInfo, String> {
-    let uuid = if let Some(uuid_string) = info.uuid {
-        Some(validate_uuid_string(uuid_string)?)
+const ROUTE: &'static str = "GET /api/msg";
+pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
+    info!("{}", ROUTE);
+    let uuid = if let Some(uuid_string) = &info.uuid {
+        match Uuid::from_string(&uuid_string) {
+            Ok(uuid) => Some(uuid),
+            Err(_) => {
+                
+                info!("{} 400 {}", ROUTE, error_codes::INVALID_UUID);
+                return HttpResponse::BadRequest().body(error_codes::INVALID_UUID);
+            } 
+        }
     } else {
         None
     };
     let priority = info.priority;
-    let reverse = info.reverse;
-    Ok(InnerInfo {
-        uuid,
-        priority,
-        reverse,
-    })
-}
-
-pub fn handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
-    let info = match make_inner_info(info.into_inner()) {
-        Ok(info) => info,
-        Err(_message) => {
-            return HttpResponse::BadRequest().finish();
-        }
-    };
-    let reverse_option = if let Some(reverse) = info.reverse {
+    let reverse = if let Some(reverse) = info.reverse {
         reverse
     } else {
         false
     };
-    let uuid = {
-        let store = lock_or_exit(&data.store);
-        match store.get(info.uuid, info.priority, reverse_option) {
-            Ok(uuid) => match uuid {
-                Some(uuid) => uuid,
-                None => { return HttpResponse::Ok().finish() }
-            },
-            Err(error) => {
-                error!("ERROR_CODE: 10ecc784-6e11-43ed-b631-e3d430f3e9af. Could not get msg from store: {}", error);
-                exit(1);
-            }
+    let msg_option = match handle(
+        &data.store, 
+        &data.db, 
+        &data.file_storage, 
+        uuid, 
+        priority, 
+        reverse) {
+        Ok(message_option) => message_option,
+        Err(error_code) => {
+            error_codes::log_err(error_code, file!(), line!(), "");
+            exit(1);
         }
     };
-
-    let msg = {
-        let mut db = lock_or_exit(&data.db);
-        match db.get(uuid.clone()) {
-            Ok(msg) => msg,
-            Err(error) => {
-                error!("ERROR_CODE: d6dce67e-c344-492c-b3a6-8c51ae9c8eb8. Could not get msg from database: {}", error);
-                exit(1);
-            }
+    let msg_type = match msg_option {
+        Some(msg_type) => msg_type,
+        None => {
+            info!("{} 200 No Message", ROUTE);
+            return HttpResponse::Ok().finish()
         }
     };
-    let file_buffer = {
-        if let Some(file_manager) = &data.file_manager {
-            FileManager::get(file_manager, uuid.clone())
-        } else {
-            None
+    let buffer = match msg_type {
+        Either::A(buffer) => buffer,
+        Either::B(msg) => {
+            info!("{} 200 {}", ROUTE, msg);
+            return HttpResponse::Ok().body(msg)
         }
     };
-    if let Some((file_buffer, file_size)) = file_buffer {
-        let msg_header = match String::from_utf8(msg.to_vec()) {
-            Ok(msg_header) => msg_header,
-            Err(error) => {
-                error!("ERROR_CODE: dca57b90-f567-4530-891e-932178ffd829. Could not get header from bytes: {}", error);
-                exit(1);
-            }
-        };
-        let body = ReturnBody::new(format!("uuid={}&{}?", uuid.to_string(), msg_header), file_size, file_buffer);
-        HttpResponse::Ok().streaming(body)
-    } else {
-        let msg = match String::from_utf8(msg.to_vec()) {
-            Ok(msg) => msg,
-            Err(error) => {
-                error!("ERROR_CODE: 17fd1f1a-2567-47a1-835f-a2277b7957b7. Could not get msg from bytes: {}", error);
-                exit(1);
-            }
-        };
-        HttpResponse::Ok().body(format!("uuid={}?{}", uuid.to_string(), msg))
-    }
-    
-    
-    // let is_file = {
-    //     if let Some(file_list) = &data.file_list {
-    //         let file_list = lock_or_exit(&file_list);
-    //         if file_list.contains(&uuid) {
-    //             true            
-    //         } else {
-    //             false
-    //         }
-    //     } else {
-    //         false
-    //     }
-    // };
-    // if is_file {
-    //     if let None = data.file_list {
-
-    //     }
-    //     let mut db = lock_or_exit(&data.db);
-    //     let msg_header = match db.get(uuid) {
-    //         Ok(msg) => msg,
-    //         Err(error) => {
-    //             error!("ERROR_CODE: d6dce67e-c344-492c-b3a6-8c51ae9c8eb8. Could not get msg from database: {}", error);
-    //             exit(1);
-    //         }
-    //     };
-    //     let file_path = {
-    //         if let Some(file_storage_path) = &data.file_storage_path {
-    //             let mut file_path = file_storage_path.to_path_buf();
-    //             file_path.push(uuid.to_string());
-    //             file_path
-    //         } else {
-    //             error!("ERROR_CODE: 049a3118-2143-451e-81a4-eea8249231ad. Could not find file storage path.");
-    //             exit(1);
-    //         }
-    //     };
-    //     let file = match File::open(file_path) {
-    //         Ok(file) => file,
-    //         Err(error) => {
-    //             error!("ERROR_CODE: 934484be-57f1-4d9e-9734-94210c4d18dd. Could not open file: {}", error);
-    //             exit(1)
-    //         }
-    //     };
-    //     let metadata = match file.metadata() {
-    //         Ok(metadata) => metadata,
-    //         Err(error) => {
-    //             error!("ERROR_CODE: ed6dcc3d-ed0d-4e0d-8955-85c7050a373b. Could not get file metadata: {}", error);
-    //             exit(1)
-    //         }
-    //     };
-    //     let file_size = metadata.len();
-    //     let file_buffer = BufReader::new(file);
-    //     let msg_header = match String::from_utf8(msg_header.to_vec()) {
-    //         Ok(msg_header) => msg_header,
-    //         Err(error) => {
-    //             error!("ERROR_CODE: dca57b90-f567-4530-891e-932178ffd829. Could not get header from bytes: {}", error);
-    //             exit(1);
-    //         }
-    //     };
-    //     let body = ReturnBody::new(format!("uuid={}&{}?", uuid.to_string(), msg_header), file_size, file_buffer);
-    //     HttpResponse::Ok().streaming(body)
-    // } else {
-    //     let mut db = lock_or_exit(&data.db);
-    //     let msg = match db.get(uuid) {
-    //         Ok(msg) => msg,
-    //         Err(error) => {
-    //             error!("ERROR_CODE: d6dce67e-c344-492c-b3a6-8c51ae9c8eb8. Could not get msg from database: {}", error);
-    //             exit(1);
-    //         }
-    //     };
-    //     let msg = match String::from_utf8(msg.to_vec()) {
-    //         Ok(msg) => msg,
-    //         Err(error) => {
-    //             error!("ERROR_CODE: 17fd1f1a-2567-47a1-835f-a2277b7957b7. Could not get msg from bytes: {}", error);
-    //             exit(1);
-    //         }
-    //     };
-    //     HttpResponse::Ok().body(format!("uuid={}?{}", uuid.to_string(), msg))
-    // }
+    info!("{} 200 {}", ROUTE, buffer.header);
+    HttpResponse::Ok().streaming(ReturnBody::new(buffer))
 }
-
-// const ROUTE: &'static str = "GET /api/msg";
-// pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
-//     http_route_hit_log(ROUTE, Some(info.clone()));
-//     let info = match make_inner_info(info.into_inner()) {
-//         Ok(info) => info,
-//         Err(message) => {
-//             return http_bad_request(ROUTE, message);
-//         }
-//     };
-//     http_reply(ROUTE, handle(data, info))
-// }
-
-// pub fn ws_handle(ctx: &mut WebsocketContext<Websocket>,data: Data<AppData>, info: Value) {
-//     http_route_hit_log(MSG_GET, Some(info.clone()));
-//     let mut reply = ws_reply_with(ctx, MSG_GET);
-//     let priority = match get_optional_priority(&info) {
-//         Ok(priority) => priority,
-//         Err(message) => {
-//             return reply(Reply::BadRequest(message));
-//         }
-//     };
-//     let uuid = match get_optional_uuid(&info) {
-//         Ok(uuid) => uuid,
-//         Err(message) => return reply(Reply::BadRequest(message)),
-//     };
-//     let reverse = match from_value_prop::<bool, _>(&info, "reverse", "boolean") {
-//         Ok(reverse) => reverse,
-//         Err(message) => return reply(Reply::BadRequest(message)),
-//     };
-//     reply(handle(
-//         data,
-//         InnerInfo {
-//             priority,
-//             uuid,
-//             reverse,
-//         },
-//     ));
-// }

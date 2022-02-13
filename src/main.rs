@@ -30,8 +30,8 @@ pub struct AppData {
     pub configuration: Mutex<StoreConfig>,
     pub configuration_path: Option<PathBuf>,
     pub db: Mutex<Box<dyn Db>>,
-    pub file_manager: Option<Mutex<api::FileManager>>,
-    pub stats: Mutex<api::Stats>
+    pub file_storage: Option<Mutex<api::lower::file_storage::FileStorage>>,
+    pub stats: Mutex<api::lower::stats::Stats>
 }
 
 #[actix_web::main]
@@ -48,7 +48,7 @@ async fn main() -> std::io::Result<()> {
     let app_data = Data::new(AppData {
         store: init_result.store,
         db: init_result.db,
-        file_manager: init_result.file_manager,
+        file_storage: init_result.file_storage, // TODO: Fix
         configuration_path: init_result.configuration_path,
         configuration: init_result.configuration,
         stats: init_result.stats
@@ -77,7 +77,7 @@ async fn main() -> std::io::Result<()> {
                 "/api/group-defaults",
                 web::post().to(api::group_defaults::post::http_handle),
             )
-            .route("/api/msg", web::get().to(api::msg::get::handle))
+            .route("/api/msg", web::get().to(api::msg::get::http_handle))
             .route("/api/msg", web::delete().to(api::msg::delete::http_handle))
             .route("/api/msg", web::post().to(api::msg::post::http_handle))
             .route(
@@ -88,7 +88,7 @@ async fn main() -> std::io::Result<()> {
             .route("/api/stats", web::put().to(api::stats::put::http_handle))
             .route("/api/store", web::get().to(api::store::get::http_handle))
             .route("/api/store", web::put().to(api::store::put::http_handle))
-            .service(web::resource("/ws").route(web::get().to(api::ws::ws_index)))
+            // .service(web::resource("/ws").route(web::get().to(api::ws::ws_index)))
     })
     // start http server on 127.0.0.1:8080
     .bind(init_result.host)?
