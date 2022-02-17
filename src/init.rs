@@ -357,10 +357,22 @@ pub fn init() -> InitResult {
             None
         }
     };
+    // get node_id
+    // update configuration only if match is found
+    if let Some(node_id_str) = matches.value_of(NODE_ID) {
+        let node_id = match node_id_str.parse::<u16>() {
+            Ok(node_id) => node_id,
+            Err(error_msg) => {
+                error!("ERROR_CODE: ea584cab-316a-41ec-9109-6db2fef41581. Could not parse node_id. {}", error_msg);
+                exit(1);
+            }
+        };
+        configuration.node_id = Some(node_id);
+    }
 
     
     // TODO: add config to store
-    let mut store = Store::new();
+    let mut store = Store::new(configuration.node_id);
     // add messages to store, prune excess
     let (removed_uuids, pruned_count) = {
         let mut removed_uuids = vec![];
