@@ -110,13 +110,6 @@ fn get_app<'a>() -> App<'a, 'a> {
                 .help("Sets the location of the messages held in files"),
         )
         .arg(
-            Arg::with_name(FILE_STORAGE_PATH)
-                // .short("f")
-                .long(FILE_STORAGE_PATH)
-                .takes_value(true)
-                .help("Sets the location of the messages held in files"),
-        )
-        .arg(
             Arg::with_name(NODE_ID)
                 // .short("f")
                 .long(NODE_ID)
