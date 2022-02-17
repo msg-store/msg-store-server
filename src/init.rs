@@ -322,6 +322,10 @@ pub fn init() -> InitResult {
     // get file list of all files stored on disk
     let mut file_storage: Option<FileStorage> = {
         if let Some(file_storage_path) = &configuration.file_storage_path {
+            if let Err(error) = create_dir_all(file_storage_path) {
+                error!("ERROR_CODE: b802d051-61cc-4577-aaa7-925b064157e5. {}", error);
+                exit(1);
+            }
             let mut file_storage = FileStorage::new(file_storage_path);
             let uuids = match read_file_storage_direcotory(file_storage_path) {
                 Ok(index) => index,
@@ -374,7 +378,7 @@ pub fn init() -> InitResult {
         }
     }
     let stats = Stats { inserted: 0, deleted: 0, pruned: pruned_count };
-    
+    // debug!("database: {:#?}", database);
     InitResult {
         host: format!("{}:{}", host, port),
         store: Mutex::new(store),
