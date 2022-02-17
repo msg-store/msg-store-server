@@ -1,6 +1,6 @@
 use clap::{App, Arg};
 use dirs::home_dir;
-use log::{error, debug};
+use log::error;
 use msg_store::core::store::Store;
 use msg_store::database::Db;
 use msg_store::database::in_memory::MemDb;
@@ -254,6 +254,7 @@ pub fn init() -> InitResult {
                 exit(1);
             }
             configuration.leveldb_path = Some(leveldb_path);
+            configuration.database = Some("leveldb".to_string());
 
         } else if database_lower == "mem" || database_lower == "memory" {
             configuration.database = Some("memory".to_string());
@@ -264,10 +265,8 @@ pub fn init() -> InitResult {
     }
     // update file-storage, file-storage-path from cli
     if let Some(file_storage_path) = matches.value_of(FILE_STORAGE_PATH) {
-        debug!("file-storage-path option: {}", file_storage_path);
         configuration.file_storage_path = Some(PathBuf::from(file_storage_path));
     } else {
-        debug!("file-storage-path option: none");
         if matches.is_present(FILE_STORAGE) {
             if let Some(home_dir) = home_dir() {
                 let mut file_storage_path = home_dir;
@@ -381,7 +380,6 @@ pub fn init() -> InitResult {
         }
     }
     let stats = Stats { inserted: 0, deleted: 0, pruned: pruned_count };
-    // debug!("database: {:#?}", database);
     InitResult {
         host: format!("{}:{}", host, port),
         store: Mutex::new(store),
