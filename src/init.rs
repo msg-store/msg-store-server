@@ -38,6 +38,7 @@ const DATABASE: &'static str = "database";
 const LEVELDB_PATH: &'static str = "leveldb-path";
 const FILE_STORAGE: &'static str = "file-storage";
 const FILE_STORAGE_PATH: &'static str = "file-storage-path";
+const NODE_ID: &'static str = "node-id";
 
 
 fn get_app<'a>() -> App<'a, 'a> {
@@ -107,6 +108,20 @@ fn get_app<'a>() -> App<'a, 'a> {
                 .long(FILE_STORAGE_PATH)
                 .takes_value(true)
                 .help("Sets the location of the messages held in files"),
+        )
+        .arg(
+            Arg::with_name(FILE_STORAGE_PATH)
+                // .short("f")
+                .long(FILE_STORAGE_PATH)
+                .takes_value(true)
+                .help("Sets the location of the messages held in files"),
+        )
+        .arg(
+            Arg::with_name(NODE_ID)
+                // .short("f")
+                .long(NODE_ID)
+                .takes_value(true)
+                .help("Sets the node id of the msg-store"),
         )
 }
 
