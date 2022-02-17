@@ -409,7 +409,7 @@ pub fn init() -> InitResult {
             removed_uuids.append(&mut add_result.msgs_removed);
             pruned_count += add_result.msgs_removed.len();
         }
-        (removed_uuids, pruned_count as u32)
+        (removed_uuids, pruned_count as u64)
     };
     // removed pruned files if any
     if let Some(file_storage) = file_storage.as_mut() {

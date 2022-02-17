@@ -12,7 +12,7 @@ use std::process::exit;
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Info {
-    max_byte_size: Option<u32>,
+    max_byte_size: Option<u64>,
 }
 
 impl Display for Info {

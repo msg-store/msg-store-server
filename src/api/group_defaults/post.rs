@@ -11,7 +11,7 @@ use std::process::exit;
 #[serde(rename_all = "camelCase")]
 pub struct Info {
     priority: u32,
-    max_byte_size: Option<u32>,
+    max_byte_size: Option<u64>,
 }
 
 const ROUTE: &'static str = "POST /api/group-defaults";

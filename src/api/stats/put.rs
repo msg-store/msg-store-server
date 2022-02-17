@@ -15,9 +15,9 @@ use std::process::exit;
 #[serde(rename_all = "camelCase")]
 pub struct Info {
     add: Option<bool>,
-    inserted: Option<u32>,
-    deleted: Option<u32>,
-    pruned: Option<u32>,
+    inserted: Option<u64>,
+    deleted: Option<u64>,
+    pruned: Option<u64>,
 }
 impl Display for Info {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
