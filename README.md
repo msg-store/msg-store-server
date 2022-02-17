@@ -55,7 +55,7 @@ Response:
 * Messages are forwarded on a highest priority then oldest status basis.
 * Messages are pruned on a lowest priority then oldest status basis.
 * Messages are only pruned once the store has reached the max byte size limit.
-* The store as a whole contains a max byte size limit option, as does each individual priority group.  
+* The store as a whole contains a max byte size limit option, as does each individual priority group. 
 For example, a developer can limit the size of the store to 1,000 bytes, while restricting priority group 1 to only 500 bytes, and leave higher priorities free with no restriction (except that of the store.)
 * The store keeps track of basic statistics such as counting the messages that have been inserted, deleted, and pruned.
 * Messages that have been deleted have been so on instructions of the developer using the del method. 
