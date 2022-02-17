@@ -363,7 +363,13 @@ pub fn init() -> InitResult {
         configuration.node_id = Some(node_id);
     }
 
-    let mut store = Store::new(configuration.node_id);
+    let mut store = match Store::new(configuration.node_id) {
+        Ok(store) => store,
+        Err(error) => {
+            error!("ERROR_CODE: 1bdc65c5-35e1-413d-89b6-0def390ada12.{}", error);
+            exit(1);
+        }
+    };
 
     if let Some(max_byte_size) = configuration.max_byte_size {
         if let Err(error) = store.update_store_defaults(&StoreDefaults { max_byte_size: Some(max_byte_size) }) {

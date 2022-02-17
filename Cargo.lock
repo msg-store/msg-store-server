@@ -1205,7 +1205,7 @@ dependencies = [
 [[package]]
 name = "msg-store"
 version = "0.8.0"
-source = "git+https://github.com/msg-store/msg-store?rev=9dbc2762aeedfc51abc7af9dc0dea0101e56ba87#9dbc2762aeedfc51abc7af9dc0dea0101e56ba87"
+source = "git+https://github.com/msg-store/msg-store?rev=9cefa01e866256d9ebbfc45993cb22cfdaad67c1#9cefa01e866256d9ebbfc45993cb22cfdaad67c1"
 dependencies = [
  "bincode",
  "bytes 1.1.0",
