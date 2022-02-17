@@ -1,7 +1,7 @@
 use clap::{App, Arg};
 use dirs::home_dir;
 use log::error;
-use msg_store::core::store::Store;
+use msg_store::core::store::{Store, StoreDefaults, GroupDefaults};
 use msg_store::database::Db;
 use msg_store::database::in_memory::MemDb;
 use msg_store::database::leveldb::Leveldb;
@@ -363,9 +363,24 @@ pub fn init() -> InitResult {
         configuration.node_id = Some(node_id);
     }
 
-    
-    // TODO: add config to store
     let mut store = Store::new(configuration.node_id);
+
+    if let Some(max_byte_size) = configuration.max_byte_size {
+        if let Err(error) = store.update_store_defaults(&StoreDefaults { max_byte_size: Some(max_byte_size) }) {
+            error!("ERROR_CODE: 4d4a2686-25ac-404e-a117-038034d0bd65. Could not get store defaults. {}", error);
+            exit(1);
+        }
+    }
+
+    if let Some(groups) = &configuration.groups {
+        for group in groups.iter() {
+            if let Err(error) = store.update_group_defaults(group.priority, &GroupDefaults { max_byte_size: group.max_byte_size }) {
+                error!("ERROR_CODE: 395d965e-cb07-4132-8236-9557f1f304ab. Could not get group defaults. {}", error);
+                exit(1);
+            };
+        }
+    }
+
     // add messages to store, prune excess
     let (removed_uuids, pruned_count) = {
         let mut removed_uuids = vec![];
