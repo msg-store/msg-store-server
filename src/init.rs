@@ -86,6 +86,7 @@ fn get_app<'a>() -> App<'a, 'a> {
             Arg::with_name(DATABASE)
                 .short("d")
                 .long(DATABASE)
+                .takes_value(true)
                 .help("Determines the database to use. (memory or leveldb)")
         )
         .arg(
@@ -228,7 +229,7 @@ pub fn init() -> InitResult {
     if let Some(database) = matches.value_of(DATABASE) {
         // validate database option
         let database_lower = database.to_ascii_lowercase();
-        if database_lower != "leveldb" {
+        if database_lower == "leveldb" {
             // validate leveldb path option
             let leveldb_path = {
                 if let Some(database_path) = matches.value_of(LEVELDB_PATH) {
@@ -254,7 +255,9 @@ pub fn init() -> InitResult {
             }
             configuration.leveldb_path = Some(leveldb_path);
 
-        } else if database_lower != "mem" && database_lower != "memory" {
+        } else if database_lower == "mem" || database_lower == "memory" {
+            configuration.database = Some("memory".to_string());
+        } else {
             error!("ERROR_CODE: 399cb52d-f50c-4508-b48c-af41cf77f007. Invalid database option. Expected mem, memory, or leveldb");
             exit(1);
         }
