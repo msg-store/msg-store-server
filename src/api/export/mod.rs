@@ -1,9 +1,9 @@
 use crate::AppData;
 use actix_web::HttpResponse;
 use actix_web::web::{Data, Query};
-use log::info;
+use log::{error, info};
 use msg_store::api::export::handle;
-use msg_store::api::error_codes::{self, log_err};
+// use msg_store::api::error_codes::{self, log_err};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::fmt::Display;
@@ -23,15 +23,15 @@ impl Display for Info {
     }
 }
 
-const ROUTE: &'static str = "/api/export";
+const ROUTE: &'static str = "GET /api/export";
 
 pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
     info!("{} {}", ROUTE, info);
     let output_path = match PathBuf::from_str(&info.output_directory) {
         Ok(output_path) => output_path,
         Err(error) => {
-            info!("{} 400 {}: {}", ROUTE, error_codes::INVALID_PATH, error.to_string());
-            return HttpResponse::BadRequest().body(error_codes::INVALID_PATH)
+            info!("{} 400 {}: {}", ROUTE, "Invalid Path", error.to_string());
+            return HttpResponse::BadRequest().body("Invalid Path")
         }
     };
     let result = handle(
@@ -39,10 +39,12 @@ pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
         &data.db, 
         &data.file_storage, 
         &data.stats, 
-        &data.configuration, 
+        // &data.configuration, 
         &output_path);
-    if let Err(error_code) = result {
-        log_err(error_code, file!(), line!(), "");
+    info!("export task complete");
+    if let Err(error) = result {
+        // TODO: FIX program closes when the database dir is not found
+        error!("{} {}", ROUTE, error);
         exit(1);
     }
     return HttpResponse::Ok().finish()
