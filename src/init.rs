@@ -1,21 +1,21 @@
 use clap::{App, Arg};
 use dirs::home_dir;
-use log::error;
-use msg_store::core::store::{Store, StoreDefaults, GroupDefaults};
-use msg_store::database::Db;
+use msg_store::core::store::{Store, StoreDefaults, GroupDefaults, StoreError};
+use msg_store::database::{Db, DatabaseError};
 use msg_store::database::in_memory::MemDb;
 use msg_store::database::leveldb::Leveldb;
 use msg_store::api::file_storage::{
     FileStorage,
+    FileStorageError,
     read_file_storage_direcotory,
     discover_files,
     rm_from_file_storage
 };
 use msg_store::api::stats::Stats;
 use msg_store::api::config::StoreConfig;
+use std::fmt::Display;
 use std::fs::create_dir_all;
 use std::path::PathBuf;
-use std::process::exit;
 use std::sync::Mutex;
 
 pub struct InitResult {
@@ -40,6 +40,69 @@ const FILE_STORAGE: &'static str = "file-storage";
 const FILE_STORAGE_PATH: &'static str = "file-storage-path";
 const NODE_ID: &'static str = "node-id";
 
+#[derive(Debug)]
+pub enum InitErrorTy {
+    CouldNotCreateDatabaseDirectory,
+    CouldNotCreateDatabasePath,
+    CouldNotCreateFileStoragePath,
+    CouldNotCreateMsgStoreDirectory,
+    CouldNotWriteToConfigurationFile,
+    DatabaseError(DatabaseError),
+    FileStorageError(FileStorageError),
+    InvalidDatabaseOption,
+    InvalidNodeId,
+    InvalidPortOption,
+    MissingLeveldbPath,
+    StoreError(StoreError),
+    UpdateOptionConflict
+}
+impl Display for InitErrorTy {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::DatabaseError(_) |
+            Self::FileStorageError(_) |
+            Self::StoreError(_) => write!(f, "({})", self),
+            _ => write!(f, "{}", self)
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct InitError {
+    pub err_ty: InitErrorTy,
+    pub file: &'static str,
+    pub line: u32,
+    pub msg: Option<String>
+}
+
+impl Display for InitError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let Some(msg) = &self.msg {
+            write!(f, "SERVER_INIT_ERROR: {}. file: {}, line: {}, msg: {}", self.err_ty, self.file, self.line, msg)
+        } else {
+            write!(f, "SERVER_INIT_ERROR: {}. file: {}, line: {}.", self.err_ty, self.file, self.line)
+        }
+    }   
+}
+
+macro_rules! init_error {
+    ($err_ty:expr) => {
+        InitError {
+            err_ty: $err_ty,
+            file: file!(),
+            line: line!(),
+            msg: None
+        }
+    };
+    ($err_ty:expr, $msg:expr) => {
+        InitError {
+            err_ty: $err_ty,
+            file: file!(),
+            line: line!(),
+            msg: Some($msg.to_string())
+        }
+    };
+}
 
 fn get_app<'a>() -> App<'a, 'a> {
     App::new("msg-store-server")
@@ -118,7 +181,7 @@ fn get_app<'a>() -> App<'a, 'a> {
         )
 }
 
-pub fn init() -> InitResult {
+pub fn init() -> Result<InitResult, InitError> {
 
     let matches = get_app().get_matches();
 
@@ -136,15 +199,13 @@ pub fn init() -> InitResult {
                         let mut configuration_path = home_dir;
                         configuration_path.push(".msg-store");
                         if let Err(error) = create_dir_all(&configuration_path) {
-                            error!("ERROR_CODE: 45698eb2-9301-43ae-b9c0-f8d43f45ff18. Could not create .msg-store directory: {}", error.to_string());
-                            exit(1);
+                            return Err(init_error!(InitErrorTy::CouldNotCreateMsgStoreDirectory, error))
                         }
                         configuration_path.push("config.json");                        
                         // create default configuration file
                         let defualt_configuration = StoreConfig::new();
                         if let Err(error) = defualt_configuration.update_config_file(&configuration_path) {
-                            error!("ERROR_CODE: 4ea5b303-622d-438f-af17-829a9470688e. Could not write to configuration file: {}", error.to_string());
-                            exit(1);
+                            return Err(init_error!(InitErrorTy::CouldNotWriteToConfigurationFile, error));
                         };
                         Some(configuration_path)
                     } else {
@@ -165,15 +226,13 @@ pub fn init() -> InitResult {
         if let Some(database) = &saved_configuration.database {
             let database = database.to_ascii_lowercase();
             if database != "mem" && database != "memory" && database != "leveldb" {
-                error!("ERROR_CODE: 8db53e5b-be6e-4f68-b2d0-c800c73bac98. Invalid database option in the configuration file. Expected mem, memory or leveldb");
-                exit(1);
+                return Err(init_error!(InitErrorTy::InvalidDatabaseOption, "Expected mem, memory or leveldb"));
             }
         }
         if let Some(no_update) = configuration.no_update {
             if let Some(update) = configuration.update {
                 if update == no_update {
-                    error!("ERROR_CODE: 9805cb4a-26c4-44e0-be51-a4387902473d. The option '--no-update' cannot be used with '--update'");
-                    exit(1);
+                    return Err(init_error!(InitErrorTy::UpdateOptionConflict, "The option '--no-update' cannot be used with '--update'"));
                 }
             }
         }
@@ -200,12 +259,9 @@ pub fn init() -> InitResult {
     let port = {
         if let Some(port) = matches.value_of(PORT) {
             let port = match port.parse::<u32>() {
-                Ok(port) => port,
-                Err(_error) => {
-                    error!("ERROR_CODE: 562d0f17-332f-4c67-bc84-006ddd23e370. Invalid port option. Expected u32");
-                    exit(1);
-                }
-            };
+                Ok(port) => Ok(port),
+                Err(_error) => Err(init_error!(InitErrorTy::InvalidPortOption, "Expected u32"))
+            }?;
             configuration.port = Some(port);
             port
         } else {
@@ -228,8 +284,7 @@ pub fn init() -> InitResult {
     if let Some(no_update) = configuration.no_update {
         if let Some(update) = configuration.update {
             if update == no_update {
-                error!("ERROR_CODE: 2f72c8e6-8027-434f-837e-f6b0392baa95. The option '--no-update' cannot be used with '--update'");
-                exit(1);
+                return Err(init_error!(InitErrorTy::UpdateOptionConflict, "The option '--no-update' cannot be used with '--update'"));
             }
         }
     }
@@ -251,15 +306,13 @@ pub fn init() -> InitResult {
                             level_db_path.push(".msg-store/leveldb");
                             level_db_path
                         } else {
-                            error!("ERROR_CODE: b2ceac74-524f-475b-ac79-f58f6614359e. Could not create leveldb path.");
-                            exit(1);
+                            return Err(init_error!(InitErrorTy::CouldNotCreateDatabaseDirectory))
                         }
                     }
                 }
             };
             if let Err(error) = create_dir_all(&leveldb_path) {
-                error!("ERROR_CODE: b9da6a07-be9e-40e2-9283-204fbd449edc. Could not create leveldb path: {}", error.to_string());
-                exit(1);
+                return Err(init_error!(InitErrorTy::CouldNotCreateDatabasePath, error));
             }
             configuration.leveldb_path = Some(leveldb_path);
             configuration.database = Some("leveldb".to_string());
@@ -267,8 +320,7 @@ pub fn init() -> InitResult {
         } else if database_lower == "mem" || database_lower == "memory" {
             configuration.database = Some("memory".to_string());
         } else {
-            error!("ERROR_CODE: 399cb52d-f50c-4508-b48c-af41cf77f007. Invalid database option. Expected mem, memory, or leveldb");
-            exit(1);
+            return Err(init_error!(InitErrorTy::InvalidDatabaseOption, "Expected mem, memory or leveldb"));
         }
     }
     // update file-storage, file-storage-path from cli
@@ -280,13 +332,11 @@ pub fn init() -> InitResult {
                 let mut file_storage_path = home_dir;
                 file_storage_path.push(".msg-store/file-storage");
                 if let Err(error) = create_dir_all(&file_storage_path) {
-                    error!("ERROR_CODE: 48c68d9d-cc29-4938-bf61-e5cb9b74ab70. Could not create default file storage path: {}", error.to_string());
-                    exit(1);
+                    return Err(init_error!(InitErrorTy::CouldNotCreateFileStoragePath, error));
                 }
                 configuration.file_storage_path = Some(file_storage_path);
             } else {
-                error!("ERROR_CODE: f4a3bb5c-f2d1-43db-a9d0-ba1c3e1add46. Could not create default file storage path due to a home directory not being present.");
-                exit(1);
+                return Err(init_error!(InitErrorTy::CouldNotCreateFileStoragePath, "Home directory does not exist"));
             }
         }
     }
@@ -298,50 +348,37 @@ pub fn init() -> InitResult {
                 Box::new(MemDb::new())
             } else if database_type == "leveldb" {
                 let level_db_path = match &configuration.leveldb_path {
-                    Some(level_db_path) => level_db_path,
-                    None => {
-                        error!("ERROR_CODE: a4660649-87e5-4060-9ce7-365aeeda0231. Missing leveldb path");
-                        exit(1);
-                    }
-                };
+                    Some(level_db_path) => Ok(level_db_path),
+                    None => Err(init_error!(InitErrorTy::MissingLeveldbPath))
+                }?;
                 let leveldb = match Leveldb::new(level_db_path) {
-                    Ok(leveldb) => leveldb,
-                    Err(error) => {
-                        error!("ERROR_CODE: 6714d014-e336-4703-a8ff-e9593fd52ae8. {}", error);
-                        exit(1);
-                    } 
-                };
+                    Ok(leveldb) => Ok(leveldb),
+                    Err(error) => Err(init_error!(InitErrorTy::DatabaseError(error)))
+                }?;
                 Box::new(leveldb)
             } else {
-                error!("ERROR_CODE: ab444716-9ebc-4f46-a461-856d0d9952a5. The database option is invalid.");
-                exit(1);
+                return Err(init_error!(InitErrorTy::InvalidDatabaseOption));
             }
         } else {
-            error!("ERROR_CODE: a9a81e3f-f1ec-458f-99a4-0e857f6b714a. The database option is invalid.");
-            exit(1);
+            return Err(init_error!(InitErrorTy::InvalidDatabaseOption));
         }
     };
     // get the stored messages from the database
     let msgs = match database.fetch() {
-        Ok(msgs) => msgs,
-        Err(error) => {
-            error!("ERROR_CODE: 30a40861-2205-4d4c-a692-55da40b44b15. {}", error);
-            exit(1);
-        }
-    };
+        Ok(msgs) => Ok(msgs),
+        Err(error) => Err(init_error!(InitErrorTy::DatabaseError(error)))
+    }?;
     // get file list of all files stored on disk
     let mut file_storage: Option<FileStorage> = {
         if let Some(file_storage_path) = &configuration.file_storage_path {
             if let Err(error) = create_dir_all(file_storage_path) {
-                error!("ERROR_CODE: b802d051-61cc-4577-aaa7-925b064157e5. {}", error);
-                exit(1);
+                return Err(init_error!(InitErrorTy::CouldNotCreateFileStoragePath, error));
             }
             let mut file_storage = FileStorage::new(file_storage_path);
             let uuids = match read_file_storage_direcotory(file_storage_path) {
                 Ok(index) => index,
-                Err(error_code) => {
-                    error!("ERROR_CODE: {}.", error_code);
-                    exit(1);
+                Err(error) => {
+                    return Err(init_error!(InitErrorTy::FileStorageError(error)));
                 }
             };
             discover_files(&mut file_storage, uuids);
@@ -354,35 +391,27 @@ pub fn init() -> InitResult {
     // update configuration only if match is found
     if let Some(node_id_str) = matches.value_of(NODE_ID) {
         let node_id = match node_id_str.parse::<u16>() {
-            Ok(node_id) => node_id,
-            Err(error_msg) => {
-                error!("ERROR_CODE: ea584cab-316a-41ec-9109-6db2fef41581. Could not parse node_id. {}", error_msg);
-                exit(1);
-            }
-        };
+            Ok(node_id) => Ok(node_id),
+            Err(error) => Err(init_error!(InitErrorTy::InvalidNodeId, error))
+        }?;
         configuration.node_id = Some(node_id);
     }
 
     let mut store = match Store::new(configuration.node_id) {
-        Ok(store) => store,
-        Err(error) => {
-            error!("ERROR_CODE: 1bdc65c5-35e1-413d-89b6-0def390ada12.{}", error);
-            exit(1);
-        }
-    };
+        Ok(store) => Ok(store),
+        Err(error) => Err(init_error!(InitErrorTy::StoreError(error)))
+    }?;
 
     if let Some(max_byte_size) = configuration.max_byte_size {
         if let Err(error) = store.update_store_defaults(&StoreDefaults { max_byte_size: Some(max_byte_size) }) {
-            error!("ERROR_CODE: 4d4a2686-25ac-404e-a117-038034d0bd65. Could not get store defaults. {}", error);
-            exit(1);
+            return Err(init_error!(InitErrorTy::StoreError(error)));
         }
     }
 
     if let Some(groups) = &configuration.groups {
         for group in groups.iter() {
             if let Err(error) = store.update_group_defaults(group.priority, &GroupDefaults { max_byte_size: group.max_byte_size }) {
-                error!("ERROR_CODE: 395d965e-cb07-4132-8236-9557f1f304ab. Could not get group defaults. {}", error);
-                exit(1);
+                return Err(init_error!(InitErrorTy::StoreError(error)));
             };
         }
     }
@@ -396,14 +425,12 @@ pub fn init() -> InitResult {
                 Ok(add_result) => add_result,
                 Err(error) => {
                     // TODO: add error handling options to the configuration
-                    error!("ERROR_CODE: 0ada6889-83e0-4bcf-98aa-613dffa11a3b. {}", error.to_string());
-                    exit(1);
+                    return Err(init_error!(InitErrorTy::StoreError(error)));
                 }
             };
             for uuid_removed in &add_result.msgs_removed {
                 if let Err(error) = database.del(uuid_removed.clone()) {
-                    error!("ERROR_CODE: 4fbc000f-4ce4-4110-ab59-15df32fd9b4d. {}", error);
-                    exit(1);
+                    return Err(init_error!(InitErrorTy::DatabaseError(error)));
                 }
             }
             removed_uuids.append(&mut add_result.msgs_removed);
@@ -414,14 +441,13 @@ pub fn init() -> InitResult {
     // removed pruned files if any
     if let Some(file_storage) = file_storage.as_mut() {
         for uuid in removed_uuids {
-            if let Err(error_code) = rm_from_file_storage(file_storage, &uuid) {
-                error!("ERROR_CODE: {}.", error_code);
-                exit(1);
+            if let Err(error) = rm_from_file_storage(file_storage, &uuid) {
+                return Err(init_error!(InitErrorTy::FileStorageError(error)));
             }
         }
     }
     let stats = Stats { inserted: 0, deleted: 0, pruned: pruned_count };
-    InitResult {
+    Ok(InitResult {
         host: format!("{}:{}", host, port),
         store: Mutex::new(store),
         db: Mutex::new(database),
@@ -432,6 +458,6 @@ pub fn init() -> InitResult {
         configuration: Mutex::new(configuration),
         configuration_path,
         stats: Mutex::new(stats)
-    }
+    })
 
 }

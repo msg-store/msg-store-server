@@ -3,6 +3,7 @@ use actix_web::{
     web::{self, Data},
     App, HttpServer,
 };
+use log::error;
 use msg_store::api::config::StoreConfig;
 use msg_store::api::file_storage::FileStorage;
 use msg_store::api::stats::Stats;
@@ -12,6 +13,7 @@ use env_logger::{Builder, Target};
 use std::{
     path::PathBuf, sync::Mutex
 };
+use std::process::exit;
 
 mod api;
 mod init;
@@ -37,7 +39,13 @@ async fn main() -> std::io::Result<()> {
     builder.target(Target::Stdout).init();
     // env_logger::init();
 
-    let init_result = init();
+    let init_result = match init() {
+        Ok(init_result) => init_result,
+        Err(error) => {
+            error!("{}", error);
+            exit(1)
+        }
+    };
 
 
     let app_data = Data::new(AppData {
