@@ -17,6 +17,6 @@ dirs = "1.0.4"
 env_logger = "0.9.0"
 futures = "0.3.19"
 log = "0.4.14"
-msg-store = { git = "https://github.com/msg-store/msg-store", rev = "ae52c8942cbd2fdecc0c5296b159d1fa1a8ab1c3" }
+msg-store = { git = "https://github.com/msg-store/msg-store", rev = "b3d97ffefa0ff1331f368a377306b717a2937a6c" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
