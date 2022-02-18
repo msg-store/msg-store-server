@@ -77,7 +77,7 @@ pub async fn http_handle(data: Data<AppData>, body: Payload) -> HttpResponse {
                 },
                 AddErrorTy::CouldNotFindFileStorage |
                 _ => {
-                    error!("{}", error);
+                    error!("ROUTE {}", error);
                     exit(1)
                 }
             }
