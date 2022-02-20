@@ -12,7 +12,7 @@ use msg_store::api::file_storage::{
     rm_from_file_storage
 };
 use msg_store::api::stats::Stats;
-use msg_store::api::config::StoreConfig;
+use msg_store::api::config::{StoreConfig, ConfigError};
 use std::fmt::Display;
 use std::fs::create_dir_all;
 use std::path::PathBuf;
@@ -49,6 +49,7 @@ pub enum InitErrorTy {
     CouldNotWriteToConfigurationFile,
     DatabaseError(DatabaseError),
     FileStorageError(FileStorageError),
+    ConfigError(ConfigError),
     InvalidDatabaseOption,
     InvalidNodeId,
     InvalidPortOption,
@@ -221,7 +222,10 @@ pub fn init() -> Result<InitResult, InitError> {
 
     // get update config from saved config
     if let Some(configuration_path) = configuration_path.as_ref() {
-        let saved_configuration = StoreConfig::open(configuration_path);
+        let saved_configuration = match StoreConfig::open(configuration_path) {
+            Ok(config) => Ok(config),
+            Err(err) => Err(init_error!(InitErrorTy::ConfigError(err)))
+        }?;
         // validate values from configuration file
         if let Some(database) = &saved_configuration.database {
             let database = database.to_ascii_lowercase();
