@@ -24,7 +24,7 @@ impl Stream for PayloadBridge {
         };
         match chunk_result {
             Ok(chunk) => Poll::Ready(Some(Ok(Bytes::copy_from_slice(&chunk)))),
-            Err(error) => {
+            Err(_error) => {
                 Poll::Ready(Some(Err("PayloadError")))
             }
         }

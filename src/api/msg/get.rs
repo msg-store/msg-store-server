@@ -50,7 +50,7 @@ impl Stream for ReturnBody {
         };
         match chunk_result {
             Ok(bytes) => Poll::Ready(Some(Ok(Bytes::copy_from_slice(&bytes)))),
-            Err(error_code) => {
+            Err(_error_code) => {
                 Poll::Ready(Some(Err(Error::from(()))))
             }
         }
