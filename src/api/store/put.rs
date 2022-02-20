@@ -26,6 +26,7 @@ pub fn http_handle(data: Data<AppData>, info: Json<Info>) -> HttpResponse {
     info!("{} {}", ROUTE, info);
     let result = handle(
         &data.store, 
+        &data.db,
         &data.file_storage, 
         &data.stats, 
         &data.configuration, 
