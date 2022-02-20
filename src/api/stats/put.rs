@@ -3,9 +3,8 @@ use actix_web::{
     HttpResponse,
 };
 use crate::AppData;
-use msg_store::api::error_codes::log_err;
 use msg_store::api::stats::set::handle;
-use log::info;
+use log::{error, info};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::fmt::Display;
@@ -38,8 +37,8 @@ pub fn http_handle(data: Data<AppData>, info: Json<Info>) -> HttpResponse {
             info!("{} 200 {}", ROUTE, stats);
             HttpResponse::Ok().json(stats)
         },
-        Err(error_code) => {
-            log_err(error_code, file!(), line!(), "");
+        Err(err) => {
+            error!("{} {}", ROUTE, err);
             exit(1);
         }
     }

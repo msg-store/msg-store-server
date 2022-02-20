@@ -1,9 +1,8 @@
 use actix_web::HttpResponse;
 use actix_web::web::{Data, Query};
 use crate::AppData;
-use msg_store::api::error_codes;
 use msg_store::api::group_defaults::get::handle;
-use log::info;
+use log::{error, info};
 use serde::{Deserialize, Serialize};
 use std::process::exit;
 
@@ -20,8 +19,8 @@ pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
             info!("{} 200", ROUTE);
             HttpResponse::Ok().json(groups)
         },
-        Err(error_code) => {
-            error_codes::log_err(error_code, file!(), line!(), "");
+        Err(err) => {
+            error!("{} {}", ROUTE, err);
             exit(1)
         }
     }

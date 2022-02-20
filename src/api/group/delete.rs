@@ -3,10 +3,9 @@ use actix_web::{
     HttpResponse,
 };
 use crate::AppData;
-use log::info;
+use log::{error, info};
 use msg_store::api::{
-    group::rm,
-    error_codes
+    group::rm::handle
 };
 use serde::{Deserialize, Serialize};
 use std::process::exit;
@@ -19,12 +18,12 @@ pub struct Info {
 const ROUTE: &'static str = "DEL /api/group";
 pub fn handle_http(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
     info!("{} priority: {}", ROUTE, info.priority);    
-    if let Err(error_code) = rm::handle(
+    if let Err(err) = handle(
         &data.store, 
         &data.db, 
         &data.file_storage, 
         &data.stats, info.priority) {
-            error_codes::log_err(error_code, file!(), line!(), "");
+            error!("{} {}", ROUTE, err);
             exit(1);
     }
     info!("{} 200", ROUTE);

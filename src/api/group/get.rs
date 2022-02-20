@@ -3,8 +3,7 @@ use actix_web::{
     web::{Data, Query},
     HttpResponse,
 };
-use log::info;
-use msg_store::api::error_codes;
+use log::{error, info};
 use msg_store::api::group::get;
 use serde::{Deserialize, Serialize};
 use std::process::exit;
@@ -35,8 +34,8 @@ pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
             info!("{} 200", ROUTE);
             HttpResponse::Ok().json(groups)
         },
-        Err(error_code) => {
-            error_codes::log_err(error_code, file!(), line!(), "");
+        Err(err) => {
+            error!("{} {}", ROUTE, err);
             exit(1);
         }
     }

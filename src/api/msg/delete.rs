@@ -1,8 +1,7 @@
 use actix_web::web::{Data, Query};
 use actix_web::HttpResponse;
 use crate::AppData;
-use log::info;
-use msg_store::api::error_codes;
+use log::{error, info};
 use msg_store::api::msg::rm::handle;
 use msg_store::core::uuid::Uuid;
 use serde::{Deserialize, Serialize};
@@ -19,8 +18,8 @@ pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
     let uuid = match Uuid::from_string(&info.uuid) {
         Ok(uuid) => uuid,
         Err(_error) => {
-            info!("{} 400 {}", ROUTE, error_codes::INVALID_UUID);
-            return HttpResponse::BadRequest().body(error_codes::INVALID_UUID)
+            info!("{} 400 {}", ROUTE, "InvalidUUID");
+            return HttpResponse::BadRequest().body("InvalidUUID")
         }
     };
     match handle(&data.store,&data.db,&data.file_storage, &data.stats, uuid) {
@@ -28,8 +27,8 @@ pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
             info!("{} 200", ROUTE);
             return HttpResponse::Ok().finish()
         },
-        Err(error_code) => {
-            error_codes::log_err(error_code, file!(), line!(), "");
+        Err(err) => {
+            error!("{} {}", ROUTE, err);
             exit(1);
         }
     }

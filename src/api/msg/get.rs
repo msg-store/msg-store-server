@@ -3,8 +3,7 @@ use actix_web::web::{ Data, Query, Bytes };
 use crate::AppData;
 use futures::stream::{Stream, StreamExt};
 use futures::task::{Context, Poll};
-use log::info;
-use msg_store::api::error_codes;
+use log::{error, info};
 use msg_store::api::msg::get::{handle, ReturnBody as ApiReturn};
 use msg_store::api::Either;
 use msg_store::core::uuid::Uuid;
@@ -52,7 +51,6 @@ impl Stream for ReturnBody {
         match chunk_result {
             Ok(bytes) => Poll::Ready(Some(Ok(Bytes::copy_from_slice(&bytes)))),
             Err(error_code) => {
-                error_codes::log_err(error_code, file!(), line!(), "");
                 Poll::Ready(Some(Err(Error::from(()))))
             }
         }
@@ -65,10 +63,9 @@ pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
     let uuid = if let Some(uuid_string) = &info.uuid {
         match Uuid::from_string(&uuid_string) {
             Ok(uuid) => Some(uuid),
-            Err(_) => {
-                
-                info!("{} 400 {}", ROUTE, error_codes::INVALID_UUID);
-                return HttpResponse::BadRequest().body(error_codes::INVALID_UUID);
+            Err(err) => {
+                info!("{} 400 {}", ROUTE, err);
+                return HttpResponse::BadRequest().body(err.err_ty.to_string());
             } 
         }
     } else {
@@ -88,8 +85,8 @@ pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
         priority, 
         reverse) {
         Ok(message_option) => message_option,
-        Err(error_code) => {
-            error_codes::log_err(error_code, file!(), line!(), "");
+        Err(err) => {
+            error!("{} {}", ROUTE, err);
             exit(1);
         }
     };

@@ -2,7 +2,6 @@ use actix_web::web::{ Data, Payload };
 use actix_web::{HttpResponse};
 use bytes::Bytes;
 use crate::AppData;
-use msg_store::api::error_codes;
 use msg_store::api::msg::add::{handle, Chunky, AddErrorTy, MsgError};
 use futures::{Stream, StreamExt};
 use log::{error, info};
@@ -26,8 +25,7 @@ impl Stream for PayloadBridge {
         match chunk_result {
             Ok(chunk) => Poll::Ready(Some(Ok(Bytes::copy_from_slice(&chunk)))),
             Err(error) => {
-                error_codes::log_err(error_codes::PAYLOAD_ERROR, file!(), line!(), error.to_string());
-                Poll::Ready(Some(Err(error_codes::PAYLOAD_ERROR)))
+                Poll::Ready(Some(Err("PayloadError")))
             }
         }
     }

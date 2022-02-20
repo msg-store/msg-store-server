@@ -1,9 +1,8 @@
 use actix_web::HttpResponse;
 use actix_web::web::{Data, Query};
 use crate::AppData;
-use msg_store::api::error_codes;
 use msg_store::api::group_defaults::rm::handle;
-use log::info;
+use log::{error, info};
 use serde::{Deserialize, Serialize};
 use std::process::exit;
 
@@ -20,8 +19,8 @@ pub fn http_handle(data: Data<AppData>, info: Query<Info>) -> HttpResponse {
         &data.configuration, 
         &data.configuration_path, 
         info.priority);
-    if let Err(error_code) = result {
-        error_codes::log_err(error_code, file!(), line!(), "");
+    if let Err(err) = result {
+        error!("{} {}", ROUTE, err);
         exit(1);
     }
     info!("{} 200", ROUTE);
