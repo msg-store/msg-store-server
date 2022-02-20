@@ -42,28 +42,38 @@ const NODE_ID: &'static str = "node-id";
 
 #[derive(Debug)]
 pub enum InitErrorTy {
+    DatabaseError(DatabaseError),
+    FileStorageError(FileStorageError),
+    ConfigError(ConfigError),
+    StoreError(StoreError),
     CouldNotCreateDatabaseDirectory,
     CouldNotCreateDatabasePath,
     CouldNotCreateFileStoragePath,
     CouldNotCreateMsgStoreDirectory,
     CouldNotWriteToConfigurationFile,
-    DatabaseError(DatabaseError),
-    FileStorageError(FileStorageError),
-    ConfigError(ConfigError),
     InvalidDatabaseOption,
     InvalidNodeId,
     InvalidPortOption,
     MissingLeveldbPath,
-    StoreError(StoreError),
     UpdateOptionConflict
 }
 impl Display for InitErrorTy {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::DatabaseError(_) |
-            Self::FileStorageError(_) |
-            Self::StoreError(_) => write!(f, "({})", self),
-            _ => write!(f, "{}", self)
+            Self::DatabaseError(err) => write!(f, "({})", err),
+            Self::FileStorageError(err) => write!(f, "({})", err),
+            Self::ConfigError(err) => write!(f, "({})", err),
+            Self::StoreError(err) => write!(f, "({})", err),
+            Self::CouldNotCreateDatabaseDirectory |
+            Self::CouldNotCreateDatabasePath |
+            Self::CouldNotCreateFileStoragePath |
+            Self::CouldNotCreateMsgStoreDirectory |
+            Self::CouldNotWriteToConfigurationFile |
+            Self::InvalidDatabaseOption |
+            Self::InvalidNodeId |
+            Self::InvalidPortOption |
+            Self::MissingLeveldbPath |
+            Self::UpdateOptionConflict => write!(f, "({:#?})", self)
         }
     }
 }
